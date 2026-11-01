@@ -1,0 +1,38 @@
+{
+    "project": "Cognivue AI",
+    "phase": 16,
+    "algorithm": "KMeans",
+    "dataset_size": 151,
+    "features": [
+        "independent_learning_score",
+        "verification_score",
+        "metacognition_score",
+        "learning_benefit_score",
+        "usage_frequency_encoded",
+        "usage_time_encoded"
+    ],
+    "target_used_for_clustering": false,
+    "candidate_clusters": [
+        2,
+        3,
+        4,
+        5,
+        6
+    ],
+    "silhouette_scores": {
+        "2": 0.38480872528735716,
+        "3": 0.24388172124535631,
+        "4": 0.26002242949447174,
+        "5": 0.25200286640076214,
+        "6": 0.22266797208971925
+    },
+    "selected_k": 2,
+    "selected_silhouette": 0.38480872528735716,
+    "random_state": 42,
+    "limitations": [
+        "Clustering is exploratory and not a validated student diagnosis.",
+        "Cluster labels do not represent predefined psychological categories.",
+        "Cluster profiles depend on the available questionnaire features.",
+        "Overreliance was excluded from clustering and examined afterward."
+    ]
+}

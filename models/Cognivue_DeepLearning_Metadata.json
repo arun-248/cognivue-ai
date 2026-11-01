@@ -1,0 +1,63 @@
+{
+    "project": "Cognivue AI",
+    "phase": 15,
+    "model": "Regularized Deep Neural Network",
+    "task": "Regression",
+    "target": "overreliance_score",
+    "dataset_size": 151,
+    "number_of_features": 9,
+    "feature_order": [
+        "independent_learning_score",
+        "verification_score",
+        "metacognition_score",
+        "learning_benefit_score",
+        "usage_frequency_encoded",
+        "usage_time_encoded",
+        "age_group_encoded",
+        "study_year_encoded",
+        "experience_encoded"
+    ],
+    "architecture": {
+        "hidden_layers": [
+            32,
+            16,
+            8
+        ],
+        "activation": "ReLU",
+        "output_activation": "Linear",
+        "dropout": [
+            0.2,
+            0.1
+        ],
+        "optimizer": "Adam",
+        "learning_rate": 0.001,
+        "loss": "MSE",
+        "regularization": "L2"
+    },
+    "validation": {
+        "method": "RepeatedKFold",
+        "folds": 5,
+        "repeats": 3,
+        "total_evaluation_folds": 15
+    },
+    "comparison": [
+        {
+            "Model": "Deep Learning",
+            "MAE": 0.7327,
+            "RMSE": 0.9347,
+            "R2": -0.4999
+        },
+        {
+            "Model": "Random Forest",
+            "MAE": 0.4904,
+            "RMSE": 0.6076,
+            "R2": 0.3681
+        }
+    ],
+    "limitations": [
+        "Small questionnaire dataset.",
+        "Cross-validation is not external validation.",
+        "Final model is fitted on the available dataset.",
+        "Predictions represent questionnaire-based estimates, not diagnoses."
+    ]
+}

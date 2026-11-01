@@ -1,0 +1,40 @@
+{
+    "project": "Cognivue AI",
+    "phase": 20,
+    "components": [
+        "Random Forest Regression",
+        "K-Means Clustering",
+        "SHAP Explainability",
+        "Adaptive Intervention Engine"
+    ],
+    "dataset_size": 151,
+    "feature_order": [
+        "independent_learning_score",
+        "verification_score",
+        "metacognition_score",
+        "learning_benefit_score",
+        "usage_frequency_encoded",
+        "usage_time_encoded",
+        "age_group_encoded",
+        "study_year_encoded",
+        "experience_encoded"
+    ],
+    "cluster_features": [
+        "independent_learning_score",
+        "verification_score",
+        "metacognition_score",
+        "learning_benefit_score",
+        "usage_frequency_encoded",
+        "usage_time_encoded"
+    ],
+    "neutral_reference_midpoint": 3.0,
+    "intervention_basis": "Construct scores below the neutral Likert midpoint receive targeted support recommendations.",
+    "prediction_interpretation": "Continuous questionnaire-based model estimate, not a diagnosis or clinical risk category.",
+    "limitations": [
+        "Interventions are rule-based recommendations.",
+        "Intervention effectiveness has not yet been experimentally validated.",
+        "Model predictions are based on self-reported questionnaire data.",
+        "SHAP contributions explain model behaviour, not causation.",
+        "The dataset contains 151 consented respondents."
+    ]
+}

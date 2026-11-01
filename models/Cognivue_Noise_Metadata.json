@@ -1,0 +1,27 @@
+{
+    "project": "Cognivue AI",
+    "phase": 17,
+    "experiment": "Input Noise Robustness",
+    "models": [
+        "Random Forest",
+        "Deep Learning"
+    ],
+    "dataset_size": 151,
+    "features": 9,
+    "cross_validation": "5-Fold",
+    "noise_distribution": "Gaussian",
+    "noise_levels": [
+        0,
+        0.05,
+        0.1,
+        0.2,
+        0.3
+    ],
+    "noise_applied_to": "Standardized test predictors only",
+    "training_data": "Clean",
+    "limitations": [
+        "Synthetic Gaussian perturbations do not represent all real-world errors.",
+        "Only one questionnaire dataset was evaluated.",
+        "Results do not establish external generalization."
+    ]
+}

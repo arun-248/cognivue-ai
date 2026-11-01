@@ -1,0 +1,11 @@
+[
+    "independent_learning_score",
+    "verification_score",
+    "metacognition_score",
+    "learning_benefit_score",
+    "usage_frequency_encoded",
+    "usage_time_encoded",
+    "age_group_encoded",
+    "study_year_encoded",
+    "experience_encoded"
+]

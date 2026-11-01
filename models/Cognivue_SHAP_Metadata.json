@@ -1,0 +1,38 @@
+{
+    "project": "Cognivue AI",
+    "phase": 19,
+    "method": "SHAP",
+    "explainer": "TreeExplainer",
+    "model": "RandomForestRegressor",
+    "dataset_size": 151,
+    "feature_count": 9,
+    "feature_order": [
+        "independent_learning_score",
+        "verification_score",
+        "metacognition_score",
+        "learning_benefit_score",
+        "usage_frequency_encoded",
+        "usage_time_encoded",
+        "age_group_encoded",
+        "study_year_encoded",
+        "experience_encoded"
+    ],
+    "target": "overreliance_score",
+    "individual_respondent_index": 118,
+    "mean_absolute_additivity_error": 6.999551784391716e-16,
+    "maximum_additivity_error": 2.4424906541753444e-15,
+    "top_features": [
+        "independent_learning_score",
+        "metacognition_score",
+        "study_year_encoded",
+        "verification_score",
+        "learning_benefit_score"
+    ],
+    "limitations": [
+        "SHAP explains the fitted model, not causal relationships.",
+        "Feature importance does not establish causation.",
+        "Correlated predictors can share or redistribute attribution.",
+        "Individual explanations describe model behaviour, not a clinical diagnosis.",
+        "Training-data explanations are descriptive and are not independent test explanations."
+    ]
+}

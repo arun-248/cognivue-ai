@@ -1,0 +1,24 @@
+{
+    "project": "Cognivue AI",
+    "phase": 18,
+    "algorithm": "CTGAN",
+    "dataset_size": 151,
+    "number_of_features": 10,
+    "cross_validation": "5-Fold",
+    "gan_epochs": 200,
+    "augmentation_multiplier": 1,
+    "synthetic_rows_per_fold": "Equal to real training rows",
+    "test_data": "Real respondents only",
+    "gan_training": "Training fold only",
+    "real_only_mean_mae": 0.4798,
+    "gan_augmented_mean_mae": 0.5153,
+    "mae_change_percentage": 7.398916215089615,
+    "limitations": [
+        "The dataset contains only 151 real respondents.",
+        "GAN-generated records are synthetic, not real participants.",
+        "Synthetic similarity does not establish statistical validity.",
+        "GAN augmentation may not improve predictive performance.",
+        "Evaluation uses one questionnaire dataset.",
+        "No external validation dataset was used."
+    ]
+}

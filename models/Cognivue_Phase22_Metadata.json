@@ -1,0 +1,24 @@
+{
+    "phase": 22,
+    "experiment": "Final model validation and baseline comparison",
+    "respondents": 151,
+    "features": 9,
+    "cross_validation": "Repeated 5-Fold",
+    "repetitions": 3,
+    "total_folds": 15,
+    "models": [
+        "Random Forest",
+        "Mean Baseline",
+        "Median Baseline"
+    ],
+    "random_forest_mean_mae": 0.490414596552901,
+    "mean_baseline_mae": 0.6424855805647594,
+    "median_baseline_mae": 0.6458474142345109,
+    "best_baseline_mae": 0.6424855805647594,
+    "rf_improvement_over_best_baseline_percent": 23.66916684389781,
+    "mean_training_mae": 0.33904992893416475,
+    "mean_validation_mae": 0.490414596552901,
+    "mean_training_validation_gap": 0.15136466761873615,
+    "external_validation": false,
+    "interpretation": "Internal repeated cross-validation on the existing dataset. Hyperparameters were fixed from previous model selection. This is not independent external validation."
+}

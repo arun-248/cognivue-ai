@@ -1,0 +1,43 @@
+{
+    "project": "Cognivue AI",
+    "model_type": "RandomForestRegressor",
+    "target": "overreliance_score",
+    "target_description": "Mean of the seven overreliance questionnaire items Q12-Q18",
+    "training_participants": 151,
+    "number_of_features": 9,
+    "feature_order": [
+        "independent_learning_score",
+        "verification_score",
+        "metacognition_score",
+        "learning_benefit_score",
+        "usage_frequency_encoded",
+        "usage_time_encoded",
+        "age_group_encoded",
+        "study_year_encoded",
+        "experience_encoded"
+    ],
+    "best_hyperparameters": {
+        "max_depth": 5,
+        "max_features": 1.0,
+        "max_samples": 0.8,
+        "min_samples_leaf": 2,
+        "min_samples_split": 5,
+        "n_estimators": 149
+    },
+    "final_search_cv_mae": 0.490414596552901,
+    "nested_cv_performance": {
+        "mae_mean": 0.4963,
+        "rmse_mean": 0.616,
+        "r2_mean": 0.3503
+    },
+    "target_scale": {
+        "minimum": 1,
+        "maximum": 5
+    },
+    "limitations": [
+        "Questionnaire-based self-reported data",
+        "Training dataset contains 151 participants",
+        "Not a clinical or diagnostic assessment",
+        "Nested cross-validation is not external validation"
+    ]
+}

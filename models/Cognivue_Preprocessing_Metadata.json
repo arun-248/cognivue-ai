@@ -1,0 +1,96 @@
+{
+    "project": "Cognivue AI",
+    "phase": 14,
+    "likert_scale": {
+        "strongly disagree": 1,
+        "disagree": 2,
+        "neutral": 3,
+        "agree": 4,
+        "strongly agree": 5
+    },
+    "age_encoding": {
+        "16-17": 1,
+        "16\u201317": 1,
+        "18-22": 2,
+        "18\u201322": 2,
+        "23-26": 3,
+        "23\u201326": 3,
+        "above 26": 4
+    },
+    "study_year_encoding": {
+        "first year": 1,
+        "second year": 2,
+        "third year": 3,
+        "fourth year": 4,
+        "fifth year or above": 5
+    },
+    "experience_encoding": {
+        "no experience": 0,
+        "beginner": 1,
+        "intermediate": 2,
+        "advanced": 3
+    },
+    "usage_frequency_encoding": {
+        "never": 0,
+        "less than once a week": 1,
+        "1-2 days a week": 2,
+        "1\u20132 days a week": 2,
+        "3-5 days a week": 3,
+        "3\u20135 days a week": 3,
+        "daily": 4,
+        "multiple times a day": 5
+    },
+    "usage_duration_encoding": {
+        "no use": 0,
+        "less than 15 minutes": 1,
+        "15-30 minutes": 2,
+        "15\u201330 minutes": 2,
+        "31-60 minutes": 3,
+        "31\u201360 minutes": 3,
+        "1-2 hours": 4,
+        "1\u20132 hours": 4,
+        "more than 2 hours": 5
+    },
+    "construct_items": {
+        "independent_learning_score": [
+            "likert_item_08",
+            "likert_item_09",
+            "likert_item_10",
+            "likert_item_11",
+            "likert_item_12"
+        ],
+        "verification_score": [
+            "likert_item_13",
+            "likert_item_14",
+            "likert_item_15",
+            "likert_item_16",
+            "likert_item_17"
+        ],
+        "metacognition_score": [
+            "likert_item_18",
+            "likert_item_19",
+            "likert_item_20",
+            "likert_item_21",
+            "likert_item_22"
+        ],
+        "learning_benefit_score": [
+            "likert_item_23",
+            "likert_item_24",
+            "likert_item_26",
+            "likert_item_28"
+        ]
+    },
+    "model_feature_order": [
+        "independent_learning_score",
+        "verification_score",
+        "metacognition_score",
+        "learning_benefit_score",
+        "usage_frequency_encoded",
+        "usage_time_encoded",
+        "age_group_encoded",
+        "study_year_encoded",
+        "experience_encoded"
+    ],
+    "number_of_likert_questions": 19,
+    "number_of_model_features": 9
+}

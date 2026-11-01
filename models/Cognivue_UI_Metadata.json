@@ -1,0 +1,38 @@
+{
+    "project": "Cognivue AI",
+    "phase": 21,
+    "interface": "Gradio",
+    "model": "RandomForestRegressor",
+    "clustering": "KMeans",
+    "explainability": "SHAP TreeExplainer",
+    "likert_question_count": 19,
+    "categorical_input_count": 5,
+    "target_questions_excluded": [
+        "Q12",
+        "Q13",
+        "Q14",
+        "Q15",
+        "Q16",
+        "Q17",
+        "Q18"
+    ],
+    "constructs": [
+        "Independent Learning",
+        "Verification and Critical Thinking",
+        "Metacognition",
+        "Learning Benefits"
+    ],
+    "outputs": [
+        "Predicted overreliance score",
+        "K-Means behavioural cluster",
+        "SHAP feature contributions",
+        "Adaptive interventions"
+    ],
+    "data_storage": "This demo does not persist submitted questionnaire responses.",
+    "limitations": [
+        "Research prototype based on 151 consented respondents.",
+        "Predictions are questionnaire-based estimates.",
+        "Intervention effectiveness has not been experimentally validated.",
+        "No external dataset validation has been performed."
+    ]
+}

@@ -1,0 +1,67 @@
+{
+    "predicted_overreliance_score": 2.8551,
+    "raw_model_prediction": 2.8551,
+    "cluster_id": 0,
+    "behavioural_profile": "Stronger learning-strategy profile",
+    "cluster_construct_average": 3.9,
+    "shap_base_value": 2.7136,
+    "shap_reconstruction_error": 0.0,
+    "top_contributing_features": [
+        {
+            "Feature": "study_year_encoded",
+            "Feature_Value": 1.0,
+            "SHAP_Contribution": -0.16365828582282807,
+            "Absolute_Contribution": 0.16365828582282807
+        },
+        {
+            "Feature": "metacognition_score",
+            "Feature_Value": 3.6,
+            "SHAP_Contribution": 0.12049819502287493,
+            "Absolute_Contribution": 0.12049819502287493
+        },
+        {
+            "Feature": "independent_learning_score",
+            "Feature_Value": 4.0,
+            "SHAP_Contribution": 0.11560511294964164,
+            "Absolute_Contribution": 0.11560511294964164
+        }
+    ],
+    "interventions": [
+        {
+            "Construct": "Independent Learning",
+            "Feature": "independent_learning_score",
+            "Observed_Score": 4.0,
+            "Reference_Midpoint": 3.0,
+            "Status": "Maintain current practice",
+            "Priority": "Maintenance",
+            "Intervention": "Continue attempting problems independently before using AI. Maintain regular unaided practice."
+        },
+        {
+            "Construct": "Verification and Critical Thinking",
+            "Feature": "verification_score",
+            "Observed_Score": 4.0,
+            "Reference_Midpoint": 3.0,
+            "Status": "Maintain current practice",
+            "Priority": "Maintenance",
+            "Intervention": "Continue checking AI-generated information against independent sources and testing important claims."
+        },
+        {
+            "Construct": "Metacognition",
+            "Feature": "metacognition_score",
+            "Observed_Score": 3.6,
+            "Reference_Midpoint": 3.0,
+            "Status": "Maintain current practice",
+            "Priority": "Maintenance",
+            "Intervention": "Continue reflecting on your learning progress and testing your understanding without relying on AI."
+        },
+        {
+            "Construct": "Learning Benefits",
+            "Feature": "learning_benefit_score",
+            "Observed_Score": 4.0,
+            "Reference_Midpoint": 3.0,
+            "Status": "Maintain current practice",
+            "Priority": "Maintenance",
+            "Intervention": "Continue using AI to clarify concepts and support practical learning while completing exercises yourself."
+        }
+    ]
+}
