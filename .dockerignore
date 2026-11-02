@@ -1,0 +1,13 @@
+
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.git/
+.github/
+.vscode/
+.idea/
+.env
+.streamlit/secrets.toml
+.pytest_cache/
+.ipynb_checkpoints/
