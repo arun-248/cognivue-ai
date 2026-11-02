@@ -1,128 +1,134 @@
-"""ui/home.py - landing page."""
+"""ui/home.py - landing page (same layout as the earlier project, new content)."""
 
 from __future__ import annotations
 
+import base64
+from pathlib import Path
+
 import streamlit as st
 
-from ui.state import go
-from ui.theme import html
+from backend.research_data import DATASET, NESTED_CV
+from ui.art import COLLAB_ART, HERO_ART
+from ui.feature import FEATURE_ACCENTS, FEATURES
+from ui.state import goto, open_feature
+from ui.theme import card, md_html, section_title, stat
+
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-def render_home() -> None:
-    left, right = st.columns([1.15, 1], gap="large")
+def hero_visual() -> str:
+    path = BASE_DIR / "assets" / "hero_ai_learning.png"
+    if path.exists():
+        try:
+            encoded = base64.b64encode(path.read_bytes()).decode()
+            return f'<img src="data:image/png;base64,{encoded}" alt="Student learning with an AI assistant">'
+        except Exception:
+            pass
+    return HERO_ART
 
-    with left:
-        html('<span class="eyebrow">Responsible AI for Brighter Learning</span>')
-        html(
-            """
-            <div class="hero-title">Think independently.<br>
-            <span class="grad">Learn intelligently.</span></div>
-            <div class="hero-desc">Discover how your Generative AI usage relates to your independent
-            learning, verification habits, and metacognitive strategies. Receive an
-            evidence-informed assessment with explainable insights and adaptive learning
-            recommendations.</div>
-            """
-        )
-        st.write("")
-        c1, c2, c3 = st.columns(3)
-        c1.button("Start Your Assessment", type="primary", key="home_start",
-                  on_click=go, args=("Assessment",), use_container_width=True)
-        c2.button("Explore Research", key="home_research",
-                  on_click=go, args=("Research",), use_container_width=True)
-        c3.button("Explore Model Insights", key="home_insights",
-                  on_click=go, args=("Model Insights",), use_container_width=True)
 
-    with right:
-        html(
-            """
-            <div class="hero-panel">
-              <div class="hero-chip"><span class="chip-dot" style="background:#4F7CFF"></span>
-                <div>Detect<small>Estimate AI reliance from your own answers</small></div></div>
-              <div class="hero-chip"><span class="chip-dot" style="background:#8B7CF6"></span>
-                <div>Understand<small>See which behaviours shaped the estimate</small></div></div>
-              <div class="hero-chip"><span class="chip-dot" style="background:#2FBF9B"></span>
-                <div>Support<small>Adaptive, rule-based learning activities</small></div></div>
-              <div class="hero-chip"><span class="chip-dot" style="background:#F59E6B"></span>
-                <div>Learn<small>Build independent reasoning habits</small></div></div>
-            </div>
-            """
-        )
+def arch_html() -> str:
+    return (
+        '<div class="arch-branch"><div class="arch-label">Main pipeline \u00b7 supervised prediction</div>'
+        '<div class="flow">'
+        '<div class="n">Questionnaire dataset<small>151 consented responses</small></div><i>\u2192</i>'
+        '<div class="n">Data cleaning and preprocessing</div><i>\u2192</i>'
+        '<div class="n">Construct score calculation<small>4 learning constructs</small></div><i>\u2192</i>'
+        '<div class="n">Feature engineering<small>9 model features</small></div><i>\u2192</i>'
+        '<div class="n hl">Random Forest regression</div><i>\u2192</i>'
+        '<div class="n">Predicted overreliance score<small>continuous, 1\u20135</small></div><i>\u2192</i>'
+        '<div class="n">SHAP explanation</div><i>\u2192</i>'
+        '<div class="n hl">Adaptive intervention<small>rule-based</small></div></div></div>'
+        '<div class="arch-branch"><div class="arch-label">Separate research components</div>'
+        '<div class="flow">'
+        '<div class="n">K-Means behavioural profiling<small>exploratory, K = 2</small></div>'
+        '<div class="n">Deep Learning comparison<small>comparative experiment only</small></div>'
+        '<div class="n">Noise robustness<small>Gaussian input perturbation</small></div>'
+        '<div class="n">CTGAN augmentation<small>tested; did not improve the model</small></div></div></div>'
+    )
 
+
+def page_home():
+    with st.container(key="homehero"):
+        h_col, c_col = st.columns([3.1, 1.0], gap="medium")
+        with h_col:
+            md_html(
+                f"""
+                <div class="hero2">
+                <div>
+                <span class="hero-badge">Responsible AI for Brighter Learning</span>
+                <h1>Think independently. <span class="hl">Learn intelligently.</span></h1>
+                <div class="desc">Discover how your Generative AI usage relates to your independent learning,
+                verification habits, and metacognitive strategies. Receive an evidence-informed assessment with
+                explainable insights and adaptive learning recommendations.</div>
+                <ul class="benefits">
+                <li><span class="ck b">\u2713</span>Understand your AI reliance.</li>
+                <li><span class="ck p">\u2713</span>Understand what influences your result.</li>
+                <li><span class="ck m">\u2713</span>Build stronger independent reasoning habits.</li>
+                </ul>
+                </div>
+                <div><div class="hero-art">{hero_visual()}</div>
+                <div class="hero-pills"><span class="pill-b">Detect</span><span class="pill-m">Understand</span><span class="pill-l">Support</span></div></div>
+                </div>
+                """
+            )
+        with c_col:
+            md_html(
+                f"""
+                <div class="collab">{COLLAB_ART}
+                <div class="cap"><h3>Human\u2013AI Collaboration</h3>
+                <p>AI as a learning assistant, with the student still doing the thinking.</p></div></div>
+                """
+            )
     st.write("")
-    benefits = [
-        ("1", "Understand your AI reliance",
-         "See an estimated score from your self-reported learning habits."),
-        ("2", "Understand what influences your result",
-         "Explainable AI shows which behaviours pushed the estimate up or down."),
-        ("3", "Build stronger independent reasoning",
-         "Practise verification, self-testing and reflection with guided activities."),
-    ]
-    cols = st.columns(3, gap="medium")
-    for col, (num, title, text) in zip(cols, benefits):
-        with col:
-            html(f'<div class="card"><div class="num-badge">{num}</div><h4>{title}</h4><p>{text}</p></div>')
+    with st.container(key="actions"):
+        a1, a2, a3 = st.columns(3, gap="medium")
+        with a1:
+            with st.container(key="act1"):
+                st.button("Start Your Assessment", icon=":material/assignment:", on_click=goto, args=("Assess",), key="home_start")
+        with a2:
+            with st.container(key="act2"):
+                st.button("Explore Research", icon=":material/menu_book:", on_click=goto, args=("Research",), key="home_research")
+        with a3:
+            with st.container(key="act3"):
+                st.button("Explore Model Insights", icon=":material/bar_chart:", on_click=goto, args=("Model Insights",), key="home_models")
 
-    st.write("")
-    html('<div class="section-title">What Cognivue AI offers</div>'
-         '<div class="section-sub">A structured way to reflect on AI-assisted learning.</div>')
-    features = [
-        ("📈", "tint-blue", "AI Reliance Prediction",
-         "A trained Random Forest estimates an overreliance score from 1 to 5 using your questionnaire answers."),
-        ("🔍", "tint-lav", "Explainable AI",
-         "SHAP shows how each factor moved the model's estimate, in plain language."),
-        ("🧭", "tint-mint", "Behavioural Insights",
-         "Understand your independent learning, verification and metacognition scores."),
-        ("🎯", "tint-peach", "Adaptive Interventions",
-         "Receive rule-based activities that encourage independent thinking and verification."),
-    ]
-    cols = st.columns(4, gap="medium")
-    for col, (icon, tint, title, text) in zip(cols, features):
-        with col:
-            html(f'<div class="card"><div class="icon-badge {tint}">{icon}</div><h4>{title}</h4><p>{text}</p></div>')
+    section_title("What Cognivue AI offers",
+                  "A research-based framework to understand, explain and support responsible AI-assisted learning. "
+                  "Insights come from your questionnaire answers, not from analysis of your actual AI prompts or conversations.")
+    with st.container(key="features"):
+        cols = st.columns(4, gap="medium")
+        for i, (col, (title, desc, _page, bg, icon)) in enumerate(zip(cols, FEATURES)):
+            with col:
+                with st.container(key=f"feat{i}"):
+                    md_html(f'<div class="feat-ic" style="background:{bg}">{icon}</div><div class="feat-title">{title}</div>'
+                            f'<div class="feat-desc">{desc}</div><div class="feat-more" style="color:{FEATURE_ACCENTS[i]}">Learn more</div>')
+                    st.button(f"Learn more about {title}", key=f"feat_btn_{i}", on_click=open_feature, args=(i,))
 
-    st.write("")
-    html('<div class="section-title">Your journey</div>'
-         '<div class="section-sub">Five steps from questionnaire to personalised support.</div>')
+    section_title("Student experience", "Five steps from self-report to a personalised learning activity.")
     steps = [
-        ("STEP 1", "Student Assessment", "24 short questions"),
-        ("STEP 2", "Feature Processing", "Construct scores and encodings"),
-        ("STEP 3", "Machine Learning Prediction", "Random Forest regression"),
-        ("STEP 4", "Explainable Analysis", "SHAP contributions"),
-        ("STEP 5", "Adaptive Intervention", "Interactive learning activity"),
+        ("Student Assessment", "Answer 24 short questions about your AI use and learning habits."),
+        ("Feature Processing", "Answers become four construct scores and five encoded profile features."),
+        ("ML Prediction", "A saved Random Forest estimates your overreliance score."),
+        ("Explainable Analysis", "SHAP shows which answers moved the estimate."),
+        ("Adaptive Intervention", "A rule-based activity encourages independent reasoning."),
     ]
-    inner = "".join(
-        f'<div class="flow-step"><span class="n">{n}</span>{t}<small>{s}</small></div>'
-        for n, t, s in steps
-    )
-    html(f'<div class="flow">{inner}</div>')
+    parts = []
+    for i, (title, text) in enumerate(steps, 1):
+        parts.append(f'<div class="step"><div class="num">{i}</div><h5>{title}</h5><p>{text}</p></div>')
+        if i < len(steps):
+            parts.append('<div class="arrow">\u2192</div>')
+    md_html(f'<div class="steps">{"".join(parts)}</div>')
 
-    st.write("")
-    html('<div class="section-title">Research architecture</div>'
-         '<div class="section-sub">The prediction pipeline built from the questionnaire study.</div>')
-    arch = [
-        ("Questionnaire dataset", "151 consented responses", True),
-        ("Cleaning and preprocessing", "Encoding and validation", False),
-        ("Construct score calculation", "Four learning constructs", False),
-        ("Feature engineering", "Nine model features", False),
-        ("Random Forest regression", "Saved, tuned model", True),
-        ("Predicted overreliance score", "Continuous, 1 to 5", False),
-        ("SHAP explanation", "Per-student contributions", False),
-        ("Adaptive intervention", "Rule-based support", True),
-    ]
-    inner = "".join(
-        f'<div class="flow-step{" accent" if a else ""}">{t}<small>{s}</small></div>'
-        for t, s, a in arch
-    )
-    html(f'<div class="flow arch-main">{inner}</div>')
-    st.write("")
-    html(
-        """
-        <div class="label-sm">Separate research components</div>
-        <div class="chips">
-          <div class="chip">K-Means behavioural profiling<small>Exploratory, K = 2</small></div>
-          <div class="chip">Deep Learning comparison<small>Comparative experiment only</small></div>
-          <div class="chip">Noise robustness<small>Gaussian input perturbation</small></div>
-          <div class="chip">CTGAN augmentation<small>Tested, did not improve the model</small></div>
-        </div>
-        """
+    section_title("Research architecture", "The current pipeline built from the questionnaire study.")
+    md_html(arch_html())
+
+    section_title("Research evaluation", "Reported from the project's own experiments on the questionnaire dataset.")
+    md_html(
+        '<div class="grid g4">'
+        + stat(str(DATASET["consented"]), "Consented respondents", f'of {DATASET["original_rows"]} responses collected')
+        + stat(str(DATASET["features"]), "Model input features", "4 constructs + 5 profile encodings")
+        + stat(f'{NESTED_CV["R2"]:.3f}', "Nested CV R\u00b2", "internal estimate, no external validation", "#109A8A")
+        + stat(f'{NESTED_CV["MAE"]:.3f}', "Nested CV MAE", "on a 1\u20135 target scale", "#3478F6")
+        + "</div>"
     )

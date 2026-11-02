@@ -26,7 +26,9 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 import numpy as np
 
+from backend.clustering import assign_cluster
 from backend.explainability import explain_prediction, get_explainer
+from backend.interventions import evaluate_interventions
 from backend.model_loader import MODELS_DIR, get_model_information, load_all_models, load_json
 from backend.prediction import predict_overreliance
 from backend.preprocessing import preprocess_responses
@@ -44,15 +46,21 @@ from backend.questionnaire import (
 )
 from backend.validation import ValidationError, validate_responses
 
-PASSED = []
+from testlog import TestLog
+
+LOG = TestLog("Backend pipeline", "B")
+PASSED = LOG.rows
+CATEGORY = "General"
 
 
 def ok(message: str) -> None:
-    PASSED.append(message)
+    LOG.record(CATEGORY, message)
     print(f"  PASSED  {message}")
 
 
 def section(title: str) -> None:
+    global CATEGORY
+    CATEGORY = title.split(". ", 1)[-1]
     print("\n" + title)
     print("-" * len(title))
 
@@ -185,6 +193,22 @@ def main() -> None:
     assert explanation["verified"] and explanation["reconstruction_error"] < 1e-9
     ok(f"SHAP additivity verified (error {explanation['reconstruction_error']:.2e})")
 
+    cluster = assign_cluster(models["kmeans_model"], models["kmeans_scaler"], student.frame)
+    assert cluster["cluster_id"] == sample["cluster_id"]
+    assert cluster["profile_label"] == sample["behavioural_profile"]
+    assert abs(cluster["construct_average"] - sample["cluster_construct_average"]) < 1e-9
+    ok(f"K-Means cluster {cluster['cluster_id']} and profile label equal the Colab sample report")
+
+    records = evaluate_interventions(student.construct_scores)
+    assert len(records) == len(sample["interventions"])
+    for mine, ref in zip(records, sample["interventions"]):
+        for key in ("Construct", "Feature", "Observed_Score", "Reference_Midpoint", "Status", "Priority", "Intervention"):
+            assert mine[key] == ref[key], (key, mine[key], ref[key])
+    ok("Rule-based interventions are identical to the Colab sample report")
+    low = evaluate_interventions({f: 2.5 for f in CONSTRUCT_ITEMS})
+    assert all(r["Status"] == "Support recommended" and r["Priority"] == "Focus area" for r in low)
+    ok("Construct scores below the 3.0 midpoint trigger support recommendations")
+
     # ------------------------------------------------------------------
     section("5. Input validation")
     base = golden_responses()
@@ -263,6 +287,7 @@ def main() -> None:
     assert len(wording) == 19 and all(t.endswith(".") for t in wording.values())
     ok("19 Likert statements present; two Q22 items kept separate")
 
+    LOG.save()
     print("\n" + "=" * 66)
     print(f"ALL {len(PASSED)} CHECKS PASSED")
     print("=" * 66)

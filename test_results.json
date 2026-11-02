@@ -1,0 +1,200 @@
+{
+  "tests": [
+    {
+      "suite": "App flow",
+      "id": "A01",
+      "category": "Assessment",
+      "test": "Home page renders without errors",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A02",
+      "category": "Assessment",
+      "test": "Assessment opens with 5 profile questions and NO default answers",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A03",
+      "category": "Assessment",
+      "test": "Next is blocked while profile questions are unanswered (clear error shown)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A04",
+      "category": "Assessment",
+      "test": "Profile completed -> Independent learning section (5 Likert questions)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A05",
+      "category": "Assessment",
+      "test": "Back keeps previously entered profile answers",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A06",
+      "category": "Assessment",
+      "test": "Returning to a section restores its answers (no Streamlit warnings)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A07",
+      "category": "Assessment",
+      "test": "All four Likert sections completed -> Review page",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A08",
+      "category": "Assessment",
+      "test": "Submit enabled when all 24 answers are present",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A09",
+      "category": "Assessment",
+      "test": "Edit on the review page jumps to that section",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A10",
+      "category": "Prediction",
+      "test": "Submission produces the real Random Forest score 2.8551 (matches Colab respondent 118)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A11",
+      "category": "Prediction",
+      "test": "Construct scores 4.0 / 4.0 / 3.6 / 4.0 calculated from the answers",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A12",
+      "category": "Prediction",
+      "test": "Results page shows the continuous score out of 5 with no invented risk labels",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A13",
+      "category": "Prediction",
+      "test": "K-Means cluster 0 / Stronger profile reproduced for respondent 118",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A14",
+      "category": "Explainability",
+      "test": "SHAP page renders and the additivity check passes",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A15",
+      "category": "Interventions",
+      "test": "Interventions page opens on the suggested dimension (lowest construct score)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A16",
+      "category": "Interventions",
+      "test": "Interactive activity tracks progress and shows completion (no effectiveness claims)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A17",
+      "category": "Interventions",
+      "test": "Activity text is preserved when navigating away and back",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A18",
+      "category": "Behavioural insights",
+      "test": "Behavioural Insights shows the exploratory K-Means group with its caveats",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A19",
+      "category": "Pages",
+      "test": "All 11 pages render without errors (with a result)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A20",
+      "category": "Start over",
+      "test": "Start Over clears answers, result and widget state",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A21",
+      "category": "Start over",
+      "test": "Result pages show a friendly guard when no assessment has been submitted",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A22",
+      "category": "Start over",
+      "test": "All 11 pages render without errors (without a result)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A23",
+      "category": "Validation",
+      "test": "Submit is disabled and an error names the unanswered question",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A24",
+      "category": "Validation",
+      "test": "'Go to first unanswered question' jumps to the right section",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A25",
+      "category": "Interventions",
+      "test": "Low construct scores flag all four dimensions for targeted support",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A26",
+      "category": "Interventions",
+      "test": "A minimum-style questionnaire still yields a valid score in 1-5",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A27",
+      "category": "Interventions",
+      "test": "High construct scores give maintenance suggestions and a valid score",
+      "status": "Pass"
+    }
+  ],
+  "generated": "2026-11-02 18:34",
+  "environment": {
+    "python": "3.11.9",
+    "streamlit": "1.66.1",
+    "scikit-learn": "1.6.1",
+    "shap": "0.51.0"
+  }
+}
