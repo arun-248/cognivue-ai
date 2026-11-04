@@ -74,7 +74,7 @@ ART = {
 <circle cx="76" cy="84" r="21" fill="#142B55" opacity=".92"/><path d="M40 156 Q76 102 112 156 Z" fill="url(#ag)"/>
 <polygon points="226,64 254,80 254,112 226,128 198,112 198,80" fill="#FFFFFF" stroke="url(#ag)" stroke-width="3"/>
 <text x="226" y="102" text-anchor="middle" font-family="Inter,Segoe UI,sans-serif" font-size="18" font-weight="800" fill="#109A8A">AI</text>
-<path d="M112 104 Q154 70 198 96" stroke="#109A8A" stroke-width="2" stroke-dasharray="4 5" fill="none"><animate attributeName="stroke-dashoffset" from="18" to="0" dur="1.5s" repeatCount="indefinite"/></path>
+<path d="M112 104 Q154 70 198 96" stroke="#109A8A" stroke-width="2" stroke-dasharray="4 5" fill="none"></path>
 <circle cx="154" cy="86" r="5" fill="#3478F6"/><circle cx="154" cy="38" r="12" fill="none" stroke="#2B63D6" stroke-width="2.5"/><path d="M149 52 h10" stroke="#2B63D6" stroke-width="3"/>
 </svg>''',
     "think": _ART_HEAD + '''
@@ -85,11 +85,10 @@ ART = {
 <circle cx="70" cy="140" r="9" fill="#3478F6"/><circle cx="230" cy="140" r="9" fill="#8757E8"/><circle cx="150" cy="162" r="9" fill="#109A8A"/>
 </svg>''',
     "gauge": _ART_HEAD + '''
-<path d="M70 150 A80 80 0 0 1 129.3 72.7" stroke="#16A34A" stroke-width="15" fill="none" opacity=".85"/>
-<path d="M129.3 72.7 A80 80 0 0 1 190 80.7" stroke="#3478F6" stroke-width="15" fill="none" opacity=".9"/>
-<path d="M190 80.7 A80 80 0 0 1 230 150" stroke="#D97706" stroke-width="15" fill="none" opacity=".85"/>
-<line x1="150" y1="150" x2="158" y2="88" stroke="#142B55" stroke-width="3" stroke-linecap="round"/><circle cx="150" cy="150" r="8" fill="#142B55"/>
-<g font-family="Inter,Segoe UI,sans-serif" font-size="11" fill="#425B82" text-anchor="middle"><text x="70" y="172">1</text><text x="150" y="176">Low · Moderate · High</text><text x="230" y="172">7</text></g>
+<path d="M70 150 A80 80 0 0 1 230 150" stroke="#D9E6F7" stroke-width="15" fill="none" stroke-linecap="round"/>
+<path d="M70 150 A80 80 0 0 1 190 80.7" stroke="url(#ag)" stroke-width="15" fill="none" stroke-linecap="round"/>
+<line x1="150" y1="150" x2="190" y2="86" stroke="#142B55" stroke-width="3" stroke-linecap="round"/><circle cx="150" cy="150" r="8" fill="#142B55"/>
+<g font-family="Inter,Segoe UI,sans-serif" font-size="11" fill="#425B82" text-anchor="middle"><text x="70" y="172">1</text><text x="150" y="178">Continuous model estimate</text><text x="230" y="172">5</text></g>
 </svg>''',
     "xai": _ART_HEAD + '''
 <line x1="150" y1="22" x2="150" y2="170" stroke="#425B82" stroke-width="1.5"/>
@@ -127,6 +126,7 @@ ART_FOR_PAGE = {
     "Why This Result?": ("xai", "Explainable AI", "SHAP shows which answers moved the model's estimate up or down."),
     "Intervention": ("path", "Adaptive learning support", "Rule-based activities that encourage independent reasoning."),
     "Behavioural Insights": ("radar", "Behavioural insights", "Your self-reported habits across four learning dimensions."),
+    "Progress": ("path", "Progress and report", "Compare attempts, save your progress file and download a PDF report."),
     "Model Insights": ("lab", "Research laboratory", "Validation, baselines, experiments and explainability."),
     "Research": ("lab", "Research laboratory", "Dataset, methods, experiments and honest limitations."),
     "Testing": ("lab", "Testing and validation", "Automated checks that the pipeline reproduces the Colab results."),

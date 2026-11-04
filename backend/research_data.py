@@ -135,3 +135,28 @@ CONSTRUCT_TABLE = [
     ("Negative Retention Item", "Q36", "Kept separate (not a model input)"),
     ("AI Access Dependence Item", "Q38", "Kept separate (not a model input)"),
 ]
+
+# Direct indicators of AI overreliance (the seven target items Q12-Q18).
+# Response counts among the 151 consented respondents, from the Colab value counts.
+# These items define the target; they are NEVER collected as predictors in the app.
+LIKERT_ORDER = ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]
+DIRECT_INDICATORS = [
+    ("Q12", "I depend on generative AI to begin academic tasks that I could attempt independently.", (22, 27, 60, 38, 4)),
+    ("Q13", "I find it difficult to complete certain academic tasks when generative AI is unavailable.", (13, 31, 54, 47, 6)),
+    ("Q14", "I often accept AI-generated answers without developing my own solution first.", (28, 45, 47, 28, 3)),
+    ("Q15", "I rely on generative AI even when I have enough knowledge to solve a problem myself.", (30, 43, 41, 34, 3)),
+    ("Q16", "I feel less confident in my ability to solve academic problems independently when I cannot use generative AI.", (25, 45, 43, 34, 4)),
+    ("Q17", "I sometimes submit or use AI-generated solutions without fully understanding how they work.", (33, 42, 44, 32, 0)),
+    ("Q18", "After receiving a suggestion from Generative AI, I find it difficult to decide on an answer independently.", (14, 38, 58, 39, 2)),
+]
+
+# Evidence types used to keep results from different evaluations clearly separate.
+EVIDENCE_GUIDE = [
+    ("Nested cross-validation", "Headline generalisation estimate for the final Random Forest on the 151 respondents (internal; not external validation)."),
+    ("Repeated 5-fold CV \u00d7 3 (15 folds)", "Final tuned Random Forest versus mean/median baselines, and versus the Deep Learning model."),
+    ("Repeated 5-fold CV \u00d7 5 (25 folds)", "Comparison of eight candidate regression models used to choose the algorithm."),
+    ("Training-data (descriptive)", "SHAP rankings and Random Forest feature importance are calculated on the training respondents and describe the fitted model."),
+    ("Hold-out noise test", "Gaussian noise added to standardised test predictors while training data stayed clean."),
+    ("Out-of-fold predictions (optional)", "Actual vs predicted and residual plots appear only when a genuine evaluation_predictions.csv exported from the notebook is supplied."),
+    ("External validation", "Not done. No result on this site is from an independent student population."),
+]

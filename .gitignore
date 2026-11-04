@@ -7,3 +7,9 @@ __pycache__/
 .streamlit/secrets.toml
 .vscode/
 .idea/
+node_modules/
+package-lock.json
+*.log
+.DS_Store
+.pytest_cache/
+.ipynb_checkpoints/

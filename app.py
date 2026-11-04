@@ -4,7 +4,12 @@ Cognivue AI - main Streamlit application.
 Run locally:   py -m streamlit run app.py
 """
 
+import logging
+
 import streamlit as st
+
+# Application logging: technical events only. Questionnaire answers are never logged.
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 
 st.set_page_config(
     page_title="Cognivue AI | Learning Intelligence",
@@ -21,7 +26,8 @@ from ui.home import page_home  # noqa: E402
 from ui.interventions import page_intervention  # noqa: E402
 from ui.layout import render_left_panel, render_navbar, render_right_panel  # noqa: E402
 from ui.model_insights import page_model_insights  # noqa: E402
-from ui.profile import page_profile  # noqa: E402
+from ui.profile import page_profile
+from ui.progress import page_progress  # noqa: E402
 from ui.research import page_research  # noqa: E402
 from ui.resources import get_model_info  # noqa: E402
 from ui.results import page_results  # noqa: E402
@@ -36,6 +42,7 @@ PAGES = {
     "Why This Result?": page_explain,
     "Intervention": page_intervention,
     "Behavioural Insights": page_profile,
+    "Progress": page_progress,
     "Model Insights": page_model_insights,
     "Research": page_research,
     "Testing": page_testing,

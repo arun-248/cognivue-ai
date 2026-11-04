@@ -1,19 +1,23 @@
-"""ui/results.py - estimated overreliance score and supporting scores."""
+"""ui/results.py - estimated overreliance score, learning-habit scores, summary and recommendations."""
 
 from __future__ import annotations
 
 import numpy as np
 import streamlit as st
 
+from backend.history import CONSTRUCTS, compare_attempts
+from backend.interventions import ACTIVITIES, NEUTRAL_MIDPOINT, recommended_focus
 from backend.questionnaire import CONSTRUCT_LABELS
 from backend.research_data import NESTED_CV
+from ui import charts
 from ui.assessment import reset_assessment
 from ui.state import goto
-from ui.theme import (C_BLUE, C_CYAN, C_MUTED, C_PURPLE, C_TEXT, chart_card, md_html, notice,
-                      section_title, show_fig, stat, themed_fig)
+from ui.theme import chart_card, esc, md_html, notice, section_title, stat
 
 CONSTRUCT_ORDER = list(CONSTRUCT_LABELS.keys())
-CONSTRUCT_COLORS = ["#3478F6", "#8757E8", "#109A8A", "#E8731F"]
+CONSTRUCT_COLORS = ["#3478F6", "#8757E8", "#0F8F80", "#E8731F"]
+SHORT = {"independent_learning_score": "Independent learning", "verification_score": "Verification",
+         "metacognition_score": "Metacognition", "learning_benefit_score": "Learning benefits"}
 
 
 def gauge_svg(score: float) -> str:
@@ -50,45 +54,21 @@ def scale_html(score: float, baseline: float | None) -> str:
     """
 
 
-def construct_bar_chart(scores: dict) -> None:
-    labels = [CONSTRUCT_LABELS[f] for f in CONSTRUCT_ORDER]
-    values = [scores[f] for f in CONSTRUCT_ORDER]
-    fig, ax = themed_fig(7, 3.3)
-    ax.barh(labels, values, color=CONSTRUCT_COLORS, height=0.55)
-    ax.axvline(3.0, color=C_MUTED, linewidth=1.2, linestyle="--")
-    ax.text(3.03, -0.62, "neutral midpoint (3.0)", color=C_MUTED, fontsize=8, va="center")
-    ax.set_xlim(1, 5)
-    ax.invert_yaxis()
-    ax.grid(axis="y", visible=False)
-    for y, v in enumerate(values):
-        ax.text(min(v + 0.05, 4.7), y, f"{v:.2f}", va="center", color=C_TEXT, fontsize=9, fontweight="bold")
-    ax.set_xlabel("Average of your answers (1 = Strongly Disagree, 5 = Strongly Agree)")
-    show_fig(fig)
-
-
-def radar_chart(scores: dict, extra: dict | None = None) -> None:
-    import matplotlib.pyplot as plt
-    from ui.theme import C_CARD
-
-    labels = [CONSTRUCT_LABELS[f].replace("Verification and Critical Thinking", "Verification") for f in CONSTRUCT_ORDER]
-    n = len(labels)
-    angles = np.linspace(0, 2 * np.pi, n, endpoint=False).tolist()
-    fig = plt.figure(figsize=(5.4, 4.8))
-    ax = fig.add_subplot(111, polar=True)
-    fig.patch.set_facecolor(C_CARD)
-    ax.set_facecolor(C_CARD)
-    ax.set_ylim(1, 5)
-    ax.set_yticks([1, 2, 3, 4, 5])
-    ax.set_yticklabels(["1", "2", "3", "4", "5"], color=C_MUTED, fontsize=8)
-    ax.set_xticks(angles)
-    ax.set_xticklabels(labels, color=C_TEXT, fontsize=9)
-    ax.grid(color="#D3E2F5")
-    ax.spines["polar"].set_color("#D3E2F5")
-    ax.plot(np.linspace(0, 2 * np.pi, 100), [3] * 100, color=C_MUTED, linewidth=1, linestyle="--", alpha=0.6)
-    vals = [scores[f] for f in CONSTRUCT_ORDER]
-    ax.plot(angles + angles[:1], vals + vals[:1], color=C_CYAN, linewidth=2, label="You")
-    ax.fill(angles + angles[:1], vals + vals[:1], color=C_CYAN, alpha=0.18)
-    show_fig(fig)
+def behaviour_summary(scores: dict, labels: dict) -> str:
+    """Plain-language summary of the four section averages relative to the neutral midpoint."""
+    above = [SHORT[f].lower() for f in CONSTRUCT_ORDER if scores[f] >= NEUTRAL_MIDPOINT]
+    below = [SHORT[f].lower() for f in CONSTRUCT_ORDER if scores[f] < NEUTRAL_MIDPOINT]
+    parts = []
+    if above:
+        parts.append(f"Your answers show {'a self-reported strength' if len(above) == 1 else 'self-reported strengths'} in {', '.join(above)} "
+                     f"(average at or above the neutral midpoint of {NEUTRAL_MIDPOINT:.1f}).")
+    if below:
+        parts.append(f"Your {', '.join(below)} {'score is' if len(below) == 1 else 'scores are'} below the midpoint, so "
+                     f"{'this is' if len(below) == 1 else 'these are'} suggested as {'an area' if len(below) == 1 else 'areas'} to practise.")
+    if not below:
+        parts.append("None of the four dimensions fell below the midpoint, so the suggestions focus on keeping these habits.")
+    parts.append(f"You reported using Generative AI for academic work {labels['usage_frequency'].lower()}, with {labels['usage_duration'].lower()} on a typical study day.")
+    return " ".join(parts)
 
 
 def page_results():
@@ -108,8 +88,8 @@ def page_results():
     if pred["was_clipped"]:
         st.info("The raw model output was outside 1\u20135 and has been limited to the valid range.")
 
-    notice("The score is a <b>continuous model estimate</b> on a 1\u20135 scale. It is not a probability, a category or a diagnosis, "
-           "and Low / Moderate / High labels are deliberately not used.", "info")
+    notice("<b>This is a model estimate, not a diagnosis.</b> It estimates a <i>self-reported questionnaire score</i> on a continuous 1\u20135 scale. "
+           "It is not a probability, a psychological assessment or a category, and Low / Moderate / High labels are deliberately not used.", "info")
     st.write("")
 
     baseline = None
@@ -119,31 +99,35 @@ def page_results():
     except Exception:
         baseline = None
 
+    # ---------------- A. predicted score ----------------
+    md_html('<div class="eyebrow">A \u00b7 Model output</div>')
     left, right = st.columns([1, 1.25], gap="large")
     with left:
         md_html(f'<div class="card gauge-wrap">{gauge_svg(pred["score"])}</div>')
     with right:
         base_text = (f" For reference, the model's average output across its training data is {baseline:.2f} "
-                     "(marked as a thin line on the scale below)." if baseline is not None else "")
+                     "(the thin line on the scale below)." if baseline is not None else "")
         md_html(
             f"""
             <div class="card">
-            <div class="eyebrow">Interpretation</div>
-            <h4 style="font-size:1.2rem">Estimated Overreliance Score: {pred['score']:.2f} out of 5</h4>
+            <div class="eyebrow">Predicted overreliance score</div>
+            <h4 style="font-size:1.2rem">{pred['score']:.2f} out of 5</h4>
             <p style="color:#425B82;font-size:.95rem">Higher values mean the model estimates stronger self-reported reliance on
-            Generative AI for answers like yours; lower values mean weaker reliance. The seven overreliance questions were
-            not asked: the estimate is predicted from your learning habits and background.{base_text}</p>
+            Generative AI for answers like yours; lower values mean weaker reliance. The seven direct overreliance questions were
+            <b>not</b> asked: the score is <b>predicted</b> by a Random Forest from your learning habits and background.{base_text}</p>
             </div>
             """
         )
+    md_html(f'<div class="card" style="margin-top:12px">{scale_html(pred["score"], baseline)}</div>')
 
-    section_title("Where you sit on the scale")
-    md_html(f'<div class="card">{scale_html(pred["score"], baseline)}</div>')
-
-    section_title("Your learning-habit scores", "Each score is the average of your answers in that section (1 = Strongly Disagree, 5 = Strongly Agree).")
+    # ---------------- B. questionnaire scores ----------------
+    st.write("")
+    md_html('<div class="eyebrow">B \u00b7 Calculated directly from your answers</div>')
+    section_title("Your learning-habit scores", "These four scores are plain averages of your own answers in each section (1 = Strongly Disagree, 5 = Strongly Agree). "
+                  "They are not predictions, and they are different from the predicted score above.")
     scores = result["construct_scores"]
-    cards = [stat(f"{scores[f]:.2f} / 5", CONSTRUCT_LABELS[f], "section average") for f in CONSTRUCT_ORDER]
     labels = result["labels"]
+    cards = [stat(f"{scores[f]:.2f} / 5", CONSTRUCT_LABELS[f], "section average") for f in CONSTRUCT_ORDER]
     cards.append(stat(labels["usage_frequency"], "AI usage frequency", "as you selected"))
     cards.append(stat(labels["usage_duration"], "AI usage on a study day", "as you selected"))
     md_html(f'<div class="grid g3">{"".join(cards)}</div>')
@@ -152,12 +136,49 @@ def page_results():
     c1, c2 = st.columns(2, gap="large")
     with c1:
         with chart_card("How do my four learning-habit scores compare?"):
-            construct_bar_chart(scores)
-            st.caption("The dashed line is the neutral Likert midpoint (3.0), used by the intervention rules as a heuristic.")
+            charts.show(charts.construct_bars([SHORT[f] for f in CONSTRUCT_ORDER], [scores[f] for f in CONSTRUCT_ORDER],
+                                              CONSTRUCT_COLORS), "res_bars")
+            st.caption("Bars show your section averages; the dashed line is the neutral midpoint (3.0), a heuristic used by the intervention rules.")
     with c2:
         with chart_card("What does my pattern look like?"):
-            radar_chart(scores)
-            st.caption("Self-reported averages on a 1\u20135 scale.")
+            charts.show(charts.radar([SHORT[f] for f in CONSTRUCT_ORDER], {"You": [scores[f] for f in CONSTRUCT_ORDER]}, {"You": "#0F8F80"}), "res_radar")
+            st.caption("The shaded shape is your four section averages on a 1\u20135 scale.")
+
+    # ---------------- C. summary, focus, recommendations ----------------
+    section_title("Summary of your learning behaviour")
+    md_html(f'<div class="sumbox">{esc(behaviour_summary(scores, labels))}</div>')
+
+    records = result["interventions"]
+    focus = recommended_focus(records)
+    flagged = [r for r in records if r["Priority"] == "Focus area"]
+    st.write("")
+    md_html(
+        f'<div class="iv-card"><div class="eyebrow">{"Most important area to look at" if flagged else "Suggested area to keep strong"}</div>'
+        f'<h2 style="text-transform:none">{esc(focus["Construct"])} \u00b7 {focus["Observed_Score"]:.2f} / 5</h2>'
+        f'<div class="why">{esc(focus["Intervention"])}</div>'
+        f'<div style="margin-top:12px"><span class="badge cyan">Suggested activity: {esc(ACTIVITIES[focus["Feature"]]["title"])}</span></div></div>'
+    )
+    st.write("")
+    section_title("Personalised recommendations", "Rule-based suggestions, with areas below the midpoint first.")
+    ordered = sorted(records, key=lambda r: (r["Priority"] != "Focus area", r["Observed_Score"]))
+    items = "".join(
+        f'<div class="factor"><div class="dot" style="background:{"#D97706" if r["Priority"] == "Focus area" else "#0F8F80"}"></div><div>'
+        f'<div class="ft">{esc(r["Construct"])} \u00b7 {esc(r["Status"])}</div><div class="fd">{esc(r["Intervention"])}</div></div></div>'
+        for r in ordered
+    )
+    md_html(f'<div class="card">{items}</div>')
+
+    # ---------------- D. comparison ----------------
+    history = st.session_state.get("history", [])
+    if len(history) >= 2:
+        prev, last = history[-2], history[-1]
+        delta = compare_attempts(prev, last)
+        section_title("Compared with your previous attempt", "Changes in self-reported scores between two attempts in this session.")
+        md_html('<div class="grid g3">'
+                + stat(f"{delta['predicted_score']:+.2f}", "Predicted overreliance score", f"{prev['predicted_score']:.2f} \u2192 {last['predicted_score']:.2f}")
+                + "".join(stat(f"{delta['construct_scores'][f]:+.2f}", SHORT[f], f"{prev['construct_scores'][f]:.2f} \u2192 {last['construct_scores'][f]:.2f}")
+                          for f in CONSTRUCTS[:2]) + "</div>")
+        st.caption("These are differences in self-reported scores. They do not prove a change in actual ability. See the Progress page for all attempts.")
 
     section_title("How to read this result")
     md_html(
@@ -170,10 +191,12 @@ def page_results():
         + "</div>"
     )
     st.write("")
-    c1, c2, c3, _ = st.columns([1.1, 1.2, 1, 1.5])
+    c1, c2, c3, c4 = st.columns([1.1, 1.3, 1.3, 1])
     with c1:
         st.button("Why this result?", type="primary", on_click=goto, args=("Why This Result?",), key="res_why")
     with c2:
-        st.button("View my intervention", on_click=goto, args=("Intervention",), key="res_iv")
+        st.button("Start my activities", on_click=goto, args=("Intervention",), key="res_iv")
     with c3:
+        st.button("Report & progress", on_click=goto, args=("Progress",), key="res_progress")
+    with c4:
         st.button("Start over", key="results_reset", on_click=lambda: (reset_assessment(), goto("Assess")))

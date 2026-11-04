@@ -20,7 +20,7 @@ STACK = [
     ("Machine learning", "scikit-learn RandomForestRegressor, K-Means"),
     ("Deep learning (comparison)", "TensorFlow / Keras neural network"),
     ("Explainability", "SHAP TreeExplainer"),
-    ("Data and charts", "pandas, NumPy, Matplotlib"),
+    ("Data, charts and reports", "pandas, NumPy, Plotly (interactive charts), ReportLab (PDF reports)"),
     ("Deployment", "GitHub, Docker, Render"),
 ]
 
@@ -46,6 +46,11 @@ def page_about():
     section_title("Technology stack")
     rows = "".join(f"<tr><td>{esc(a)}</td><td>{esc(b)}</td></tr>" for a, b in STACK)
     md_html(f'<div class="card"><table class="rtable"><tr><th>Component</th><th>Technology</th></tr>{rows}</table></div>')
+    section_title("Privacy and data usage")
+    md_html('<div class="card"><p>Answers are processed in memory for your browser session only; they are not stored on the server, written to a database or included in logs, and no name, '
+            'email or student ID is requested. Downloads (PDF report, progress file) are created only on request and contain scores rather than raw answers. '
+            'The hosting provider may keep standard technical server logs, which do not contain your answers. Full details are on the Report &amp; Progress page.</p></div>')
+    st.write("")
     section_title("Team contributions")
     rows = "".join(
         f"<tr><td>{esc(m['name'] or 'Name to be added')}</td><td>{esc(m['id'] or 'ID to be added')}</td><td>{esc(m['role'])}</td>"

@@ -9,11 +9,7 @@ from __future__ import annotations
 
 import html as htmllib
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import streamlit as st  # noqa: E402
+import streamlit as st
 
 C_CARD = "#FFFFFF"
 C_BORDER = "#C8D9F0"
@@ -428,6 +424,32 @@ div[data-testid="stRadio"] label p { color:#142B55 !important; font-weight:600; 
 .review-wrap { overflow-x:auto; }
 .rtable td.ans { font-weight:700; }
 .rtable td.miss { color:#D6455D; font-weight:700; }
+
+/* ===== Phase 2 refinements: calm, accessible, mobile-friendly ===== */
+.card:hover, .st-key-feat0:hover, .st-key-feat1:hover, .st-key-feat2:hover, .st-key-feat3:hover,
+.st-key-leftpanel button:hover, .st-key-act1 button:hover, .st-key-act2 button:hover, .st-key-act3 button:hover { transform:none !important; }
+.eyebrow { color:#0B6B5F; }
+.q-kicker, .arch-label { color:#0B6B5F; }
+.panel-label { color:#34486F; }
+.footer .fs, .stat .s, .badge { color:#34486F; }
+.step-tag { display:inline-block; padding:2px 9px; border-radius:999px; font-size:.72rem; font-weight:800; letter-spacing:.04em; }
+.tag-done { background:#DDF7EA; color:#0B5B4E; }
+.tag-prog { background:#FFF0E0; color:#7A4A18; }
+.tag-todo { background:#E5F1FF; color:#1F4FD1; }
+.tag-next { background:#E8DEFF; color:#5B31B8; }
+.evidence { display:inline-block; padding:3px 10px; border-radius:999px; background:#E5F1FF; color:#1F4FD1; font-size:.74rem; font-weight:700; margin:0 6px 8px 0; }
+.sumbox { background:#F3F8FF; border:1px solid #C8D9F0; border-radius:16px; padding:16px 18px; color:#142B55; line-height:1.65; font-size:.95rem; }
+[data-testid="stPlotlyChart"] { border-radius:12px; }
+@media (max-width: 700px) {
+  div[data-testid="stRadio"] [role="radiogroup"] { flex-direction:column; align-items:stretch; }
+  div[data-testid="stRadio"] label { width:100%; }
+  .q-card { flex-direction:column; padding:18px; }
+  .q-title { font-size:1.2rem; }
+  .score-big { font-size:3rem; }
+  .st-key-assess_back button, .st-key-assess_next button { min-width:0; width:100%; }
+  .rtable { font-size:.8rem; }
+  .rtable th, .rtable td { padding:8px 8px; }
+}
 </style>
 """
 
@@ -471,27 +493,6 @@ def section_title(title, sub=""):
 
 def notice(text, kind="info"):
     md_html(f'<div class="notice {kind}">{text}</div>')
-
-
-def themed_fig(width=7.5, height=4.0):
-    fig, ax = plt.subplots(figsize=(width, height))
-    fig.patch.set_facecolor(C_CARD)
-    ax.set_facecolor(C_CARD)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    ax.tick_params(colors=C_MUTED, labelsize=9, length=0)
-    ax.grid(color="#D3E2F5", linewidth=0.7, alpha=0.85)
-    ax.set_axisbelow(True)
-    ax.xaxis.label.set_color(C_MUTED)
-    ax.yaxis.label.set_color(C_MUTED)
-    ax.title.set_color(C_TEXT)
-    return fig, ax
-
-
-def show_fig(fig):
-    fig.tight_layout()
-    st.pyplot(fig)
-    plt.close(fig)
 
 
 def chart_card(question):

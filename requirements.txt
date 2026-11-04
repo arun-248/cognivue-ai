@@ -1,4 +1,4 @@
-# Cognivue AI - pinned for Python 3.11 (verified with test_pipeline.py)
+# Cognivue AI - pinned for Python 3.11 (verified by test_pipeline.py, test_features.py and test_app_flow.py)
 streamlit==1.66.1
 numpy==2.2.6
 pandas==2.2.3
@@ -6,5 +6,5 @@ scipy==1.17.1
 scikit-learn==1.6.1
 joblib==1.6.0
 shap==0.51.0
-matplotlib==3.11.2
 plotly==7.1.0
+reportlab==5.1.0

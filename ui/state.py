@@ -19,6 +19,7 @@ JOURNEY = [
     ("Why This Result?", "lightbulb", "Understand what influenced the estimate"),
     ("Intervention", "track_changes", "Complete a personalised learning activity"),
     ("Behavioural Insights", "person", "Review your learning behaviour scores"),
+    ("Progress", "timeline", "Report, progress over time and privacy"),
 ]
 RESEARCH_NAV = [
     ("Model Insights", "bar_chart", "Validation, baselines and experiments"),
@@ -38,10 +39,18 @@ def init_state() -> None:
         "submit_error": None,
         "flag_missing_step": None,
         "_sticky": {},
-        "iv_example_n": 0,
+        "history": [],          # attempts this session (derived scores only)
+        "report_bytes": None,   # generated PDF, kept only in the session
+        "assess_confirm": False,
+        "iv_task_n": {},
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
+
+
+def iv_values() -> dict:
+    """All intervention step/reflection inputs remembered this session (keys iv_<feature>_<id>)."""
+    return {k: v for k, v in st.session_state["_sticky"].items() if k.startswith("iv_")}
 
 
 def sticky(key, default):

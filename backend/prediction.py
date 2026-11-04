@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
 import pandas as pd
 
 TARGET_MIN = 1.0
@@ -24,7 +25,11 @@ def predict_overreliance(random_forest, frame: pd.DataFrame, feature_order: list
     if len(frame) != 1:
         raise ValueError("Exactly one student row is expected.")
 
-    raw = float(random_forest.predict(frame[feature_order])[0])
+    row = frame[feature_order].astype("float64")
+    if not np.isfinite(row.to_numpy()).all():
+        raise ValueError("The feature row contains missing or non-finite values.")
+
+    raw = float(random_forest.predict(row)[0])
     if not math.isfinite(raw):
         raise ValueError("Model produced a non-finite prediction.")
 

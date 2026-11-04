@@ -1,0 +1,8 @@
+# Optional Render Blueprint. Your existing Render service can keep working without this file.
+services:
+  - type: web
+    name: cognivue-ai
+    runtime: docker
+    plan: free
+    healthCheckPath: /_stcore/health
+    autoDeploy: true

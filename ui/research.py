@@ -7,9 +7,10 @@ import streamlit as st
 from backend import research_data as R
 from backend.interventions import CONSTRUCT_RULES, NEUTRAL_MIDPOINT
 from backend.questionnaire import FEATURE_ORDER, LIKERT_LABELS, PROFILE_QUESTIONS
+from ui import charts
 from ui.home import arch_html
 from ui.model_insights import table
-from ui.theme import card, esc, md_html, notice, section_title, stat
+from ui.theme import card, chart_card, esc, md_html, notice, section_title, stat
 
 
 def tab_architecture():
@@ -54,6 +55,32 @@ def tab_constructs():
            "and were treated as separate items. Q36 and Q38 were kept separate because their direction and relationship to the positive learning-benefit construct were not suitable for combining.", "info")
     st.write("")
     md_html(card("The nine model features, in order", " \u2192 ".join(esc(f) for f in FEATURE_ORDER)))
+
+
+def tab_direct():
+    """Section C of the questionnaire: the seven direct indicators that define the target."""
+    md_html('<div class="eyebrow">Section C \u00b7 Direct Indicators of AI Overreliance (Q12\u2013Q18)</div>')
+    md_html('<div class="card"><h4>How the target variable is built</h4><p>The seven statements below were answered on a 5-point Likert scale. The model\'s target, '
+            '<b>overreliance_score</b>, is the mean of these seven answers (range 1\u20135). They were collected for the research dataset but are <b>never asked in the student '
+            'assessment</b>, because using them as inputs would leak the target into the prediction.</p></div>')
+    st.write("")
+    labels = [q for q, _, _ in R.DIRECT_INDICATORS]
+    totals = [sum(c) for _, _, c in R.DIRECT_INDICATORS]
+    counts_by_label = {lab: [c[i] for _, _, c in R.DIRECT_INDICATORS] for i, lab in enumerate(R.LIKERT_ORDER)}
+    with chart_card("How did the 151 respondents answer the seven direct indicators?"):
+        charts.show(charts.stacked_distribution(labels, counts_by_label, totals), "res_direct")
+        st.caption("Each bar is 100% of the 151 consented respondents. Orange = disagreement, grey = neutral, blue = agreement. Hover a segment for the exact count. "
+                   "Neutral was the most common answer for Q12, Q13, Q14, Q17 and Q18; Disagree was the most common for Q15 and Q16.")
+    st.write("")
+    head = "".join(f"<th>{esc(l)}</th>" for l in R.LIKERT_ORDER)
+    rows = "".join(
+        f"<tr><td><b>{q}</b></td><td>{esc(text)}</td>" + "".join(f"<td>{c} ({c / sum(counts) * 100:.1f}%)</td>" for c in counts) + f"<td>{sum(counts)}</td></tr>"
+        for q, text, counts in R.DIRECT_INDICATORS
+    )
+    md_html(f'<div class="card" style="overflow-x:auto"><table class="rtable"><tr><th>Item</th><th>Statement</th>{head}<th>Total</th></tr>{rows}</table></div>')
+    st.write("")
+    notice("Counts are response counts among the 151 consented respondents (19 non-consented responses are excluded). Q17 had no Strongly Agree responses. "
+           "Cronbach's alpha for these seven items is 0.872. These distributions describe the research sample and are not diagnostic criteria.", "info")
 
 
 def tab_reliability():
@@ -144,10 +171,10 @@ def tab_sdg():
 
 def page_research():
     section_title("Research", "Methodology, statistics, experiments and honest limitations of the framework.")
-    names = ["Architecture", "Dataset", "Preprocessing", "Constructs", "Reliability", "Correlations", "Predictive model",
+    names = ["Architecture", "Dataset", "Preprocessing", "Constructs", "Direct indicators (Q12\u2013Q18)", "Reliability", "Correlations", "Predictive model",
              "Explainable AI", "Interventions", "Experiments", "Limitations", "Future work", "SDG 4"]
     tabs = st.tabs(names)
-    fns = [tab_architecture, tab_dataset, tab_preprocessing, tab_constructs, tab_reliability, tab_correlations, tab_model,
+    fns = [tab_architecture, tab_dataset, tab_preprocessing, tab_constructs, tab_direct, tab_reliability, tab_correlations, tab_model,
            tab_xai, tab_interventions, tab_experiments,
            lambda: md_html('<div class="card"><h4>Limitations</h4><p>' + "<br>".join(f"{i}. {esc(t)}" for i, t in enumerate(LIMITATIONS, 1)) + "</p></div>"),
            lambda: md_html('<div class="card"><h4>Future work</h4><p>' + "<br>".join(f"{i}. {esc(t)}" for i, t in enumerate(FUTURE, 1)) + "</p></div>"),

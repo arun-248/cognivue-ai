@@ -26,10 +26,10 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 import numpy as np
 
-from backend.clustering import assign_cluster
+from backend.clustering import assign_cluster, cluster_profiles, pca_projection
 from backend.explainability import explain_prediction, get_explainer
 from backend.interventions import evaluate_interventions
-from backend.model_loader import MODELS_DIR, get_model_information, load_all_models, load_json
+from backend.model_loader import MODELS_DIR, ModelIntegrityError, get_model_information, load_all_models, load_json
 from backend.prediction import predict_overreliance
 from backend.preprocessing import preprocess_responses
 from backend.questionnaire import (
@@ -286,6 +286,100 @@ def main() -> None:
     assert wording["Q22b"].startswith("I attempt to solve a problem again")
     assert len(wording) == 19 and all(t.endswith(".") for t in wording.values())
     ok("19 Likert statements present; two Q22 items kept separate")
+
+
+    # ------------------------------------------------------------------
+    section("8. K-Means groups derived from the saved model")
+    profiles = cluster_profiles(models["kmeans_model"], models["kmeans_scaler"])
+    from backend import research_data as RD
+    assert [(p["size"]) for p in profiles] == [120, 31]
+    assert [round(p["percent"], 2) for p in profiles] == [79.47, 20.53]
+    ok("Cluster sizes from the saved model are 120 and 31 (79.47% / 20.53%)")
+    for p in profiles:
+        for feature, value in RD.KMEANS_FEATURE_MEANS[p["cluster_id"]].items():
+            assert abs(p["centroid"][feature] - value) < 1e-3, (p["cluster_id"], feature)
+    ok("Centroids (inverse-transformed) equal the Colab cluster means")
+    assert profiles[0]["label"].startswith("Stronger") and profiles[1]["label"].startswith("Developing")
+    assert profiles[0]["construct_mean"] > profiles[1]["construct_mean"]
+    ok("Profile labels are derived from the fitted centroids (higher construct centroids = stronger group)")
+    meta_k = models["kmeans_metadata"]
+    assert abs(meta_k["selected_silhouette"] - 0.3848) < 1e-4 and meta_k["selected_k"] == 2
+    assert abs(models["kmeans_model"].inertia_ - RD.KMEANS_INERTIA[2]) < 1e-3
+    proj = pca_projection(models["kmeans_model"], models["kmeans_scaler"], models["kmeans_pca"], student.frame)
+    assert abs(sum(proj["explained_variance"]) - RD.PCA_EXPLAINED_VARIANCE) < 1e-4 and proj["student"] is not None
+    ok("Silhouette 0.3848, inertia and PCA explained variance 0.8096 match the saved objects")
+    # every assignment path agrees with the centroid labels
+    for answers in (golden_responses(), random_responses(random.Random(7))):
+        st_ = preprocess_responses(answers)
+        c = assign_cluster(models["kmeans_model"], models["kmeans_scaler"], st_.frame, profiles)
+        assert c["profile_label"] == profiles[c["cluster_id"]]["label"]
+    ok("A student's profile label always equals the label of the assigned cluster's centroid")
+
+    # ------------------------------------------------------------------
+    section("9. Model loading safety")
+    import shutil, tempfile
+    from backend import model_loader as ML
+    original_dir = ML.MODELS_DIR
+    try:
+        ML.MODELS_DIR = Path(tempfile.mkdtemp()) / "does_not_exist"
+        try:
+            load_all_models()
+            raise AssertionError("missing models folder should fail")
+        except FileNotFoundError as exc:
+            assert "Missing model file" in str(exc)
+        ok("A missing models folder raises a clear FileNotFoundError")
+
+        broken = Path(tempfile.mkdtemp())
+        for f in original_dir.iterdir():
+            shutil.copy(f, broken / f.name)
+        (broken / "Cognivue_Final_RandomForest_Model.joblib").write_bytes(b"not a model")
+        ML.MODELS_DIR = broken
+        try:
+            load_all_models()
+            raise AssertionError("corrupted model should fail")
+        except ModelIntegrityError as exc:
+            assert "could not be loaded" in str(exc)
+        ok("A corrupted model file raises ModelIntegrityError")
+
+        mismatch = Path(tempfile.mkdtemp())
+        for f in original_dir.iterdir():
+            shutil.copy(f, mismatch / f.name)
+        meta_path = mismatch / "Cognivue_Model_Metadata.json"
+        data = json.loads(meta_path.read_text(encoding="utf-8"))
+        data["best_hyperparameters"]["n_estimators"] = 999
+        meta_path.write_text(json.dumps(data), encoding="utf-8")
+        ML.MODELS_DIR = mismatch
+        try:
+            load_all_models()
+            raise AssertionError("metadata mismatch should fail")
+        except ModelIntegrityError as exc:
+            assert "n_estimators" in str(exc)
+        ok("Model/metadata hyperparameter mismatch is detected")
+    finally:
+        ML.MODELS_DIR = original_dir
+    bad = student.frame.copy()
+    bad.iloc[0, 0] = float("nan")
+    try:
+        predict_overreliance(rf, bad, feature_order)
+        raise AssertionError("NaN should be rejected")
+    except ValueError:
+        ok("A feature row containing NaN is rejected before prediction")
+
+    # ------------------------------------------------------------------
+    section("10. Research data and scale consistency")
+    for q, text, counts in RD.DIRECT_INDICATORS:
+        assert sum(counts) == RD.DATASET["consented"] == 151, q
+    assert [q for q, _, _ in RD.DIRECT_INDICATORS] == TARGET_ITEM_IDS
+    ok("Q12-Q18 response distributions each sum to the 151 consented respondents")
+    forbidden = ["1\u20137", "1-7", "out of 7", "Low \u00b7 Moderate", "Low · Moderate", "High Reliance", "Low Reliance", "Moderate Reliance", "risk level", "Risk level"]
+    for path in list((PROJECT_ROOT / "ui").glob("*.py")) + [PROJECT_ROOT / "app.py"]:
+        text = path.read_text(encoding="utf-8")
+        for word in forbidden:
+            assert word not in text, f"{path.name} still contains '{word}'"
+    ok("No old 1-7 scale or Low/Moderate/High risk wording remains in the UI source")
+    import ui.art as art
+    assert "Continuous model estimate" in art.ART["gauge"] and ">7<" not in art.ART["gauge"]
+    ok("The gauge illustration shows a 1-5 continuous estimate")
 
     LOG.save()
     print("\n" + "=" * 66)

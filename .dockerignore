@@ -1,6 +1,6 @@
-
 venv/
 .venv/
+env/
 __pycache__/
 *.py[cod]
 .git/
@@ -11,3 +11,7 @@ __pycache__/
 .streamlit/secrets.toml
 .pytest_cache/
 .ipynb_checkpoints/
+node_modules/
+package-lock.json
+*.log
+.DS_Store

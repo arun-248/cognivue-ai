@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import streamlit as st
 
-from backend.clustering import assign_cluster
+from backend.clustering import assign_cluster, cluster_profiles
+from backend.history import make_snapshot
 from backend.interventions import evaluate_interventions
 from backend.model_loader import get_model_information
 from backend.prediction import predict_overreliance
@@ -103,6 +104,7 @@ def _save_answer(qid: str) -> None:
         _answers()[qid] = new_value
         st.session_state["result"] = None   # any change makes an old result stale
         st.session_state["submit_error"] = None
+        st.session_state["assess_confirm"] = False
 
 
 def _next_step() -> None:
@@ -141,7 +143,8 @@ def reset_intervention() -> None:
     for key in [k for k in store if k.startswith("iv_")]:
         store.pop(key, None)
         st.session_state.pop(key, None)
-    st.session_state["iv_example_n"] = 0
+    st.session_state["iv_task_n"] = {}
+    st.session_state["report_bytes"] = None
 
 
 def reset_assessment() -> None:
@@ -153,6 +156,7 @@ def reset_assessment() -> None:
     st.session_state["result"] = None
     st.session_state["submit_error"] = None
     st.session_state["flag_missing_step"] = None
+    st.session_state["assess_confirm"] = False
     reset_intervention()
     request_scroll_top()
 
@@ -167,11 +171,15 @@ def _submit() -> None:
             "Some answers are missing or invalid. Please complete every question before submitting."
         )
         return
+    if not st.session_state.get("assess_confirm"):
+        st.session_state["submit_error"] = "Please tick the confirmation box before submitting."
+        return
     try:
         student = preprocess_responses(answers)
         models = get_models()
         prediction = predict_overreliance(models["random_forest"], student.frame, models["feature_order"])
-        cluster = assign_cluster(models["kmeans_model"], models["kmeans_scaler"], student.frame)
+        profiles = cluster_profiles(models["kmeans_model"], models["kmeans_scaler"])
+        cluster = assign_cluster(models["kmeans_model"], models["kmeans_scaler"], student.frame, profiles)
         interventions = evaluate_interventions(student.construct_scores)
         info = get_model_information(models)
     except ValidationError as exc:
@@ -185,7 +193,7 @@ def _submit() -> None:
         return
 
     reset_intervention()
-    st.session_state["result"] = {
+    result = {
         "features": student.features,
         "construct_scores": student.construct_scores,
         "frame": student.frame,
@@ -199,6 +207,9 @@ def _submit() -> None:
             f"{info['sklearn_installed']} is installed. Install scikit-learn==1.6.1."
         ),
     }
+    st.session_state["result"] = result
+    st.session_state["history"].append(make_snapshot(result))
+    st.session_state["assess_confirm"] = False
     goto("Results")
 
 
@@ -222,10 +233,24 @@ def _intro() -> None:
     )
     st.write("")
     notice(
+        "<b>This is not an examination.</b> There are no right or wrong answers, nothing is graded, and the result is not shared with anyone. "
+        "Choose the option that best describes what you actually did over the past 30 days; honest answers make the estimate more useful for you.",
+        "ok",
+    )
+    st.write("")
+    notice(
         "<b>Privacy.</b> Your answers are processed in memory for this browser session only. Cognivue AI does not ask for "
         "your name, email or student ID, and does not write your answers to a file or database. Choosing Start Over clears them.",
         "info",
     )
+    with st.expander("How is my data used?"):
+        st.markdown(
+            "- Your answers are turned into four section averages and five encoded profile values, which are fed to a saved model.\n"
+            "- They are kept only in this browser session and are not stored on the server, written to a database or included in application logs.\n"
+            "- Downloads (a PDF report or a progress file) are created only when you ask, and contain scores, not your raw answers.\n"
+            "- Refreshing the page or choosing Start Over clears your current answers.\n"
+            "- The hosting provider may keep standard technical server logs (for example connection times), which do not contain your answers."
+        )
     st.write("")
 
 
@@ -240,9 +265,13 @@ def _chips(current: int) -> None:
     md_html(f'<div class="stepper">{"".join(chips)}</div>')
 
 
-def _progress() -> None:
+def _progress(current: int = 0) -> None:
     answered = TOTAL - len(_missing_all())
-    st.progress(answered / TOTAL, text=f"{answered} of {TOTAL} questions answered")
+    text = f"{answered} of {TOTAL} questions answered \u00b7 {TOTAL - answered} remaining"
+    if current < REVIEW_STEP:
+        in_section = len(STEPS[current]["questions"]) - len(_missing_in(current))
+        text += f" \u00b7 this section: {in_section} of {len(STEPS[current]['questions'])}"
+    st.progress(answered / TOTAL, text=text)
 
 
 def _render_question(q: dict, flagged: bool) -> None:
@@ -318,7 +347,7 @@ def _render_review() -> None:
     edit_cols = st.columns(len(STEPS))
     for i, col in enumerate(edit_cols):
         with col:
-            st.button(f"Edit {i + 1}", on_click=_jump_to, args=(i,), key=f"review_edit_{i}", use_container_width=True)
+            st.button(f"Edit {i + 1}", on_click=_jump_to, args=(i,), key=f"review_edit_{i}", width="stretch")
 
     missing_all = _missing_all()
     if missing_all:
@@ -330,13 +359,16 @@ def _render_review() -> None:
         st.error(st.session_state["submit_error"])
 
     st.write("")
+    st.checkbox("I have reviewed my answers and confirm they are complete and honest.", key="assess_confirm", disabled=bool(missing_all))
+    st.write("")
     b1, b2, b3 = st.columns([1, 1, 2])
     with b1:
         st.button("Back", icon=":material/arrow_back:", on_click=_prev_step, key="assess_back")
     with b2:
         st.button("Start over", on_click=reset_assessment, key="assess_reset")
     with b3:
-        st.button("Submit Assessment", type="primary", on_click=_submit, key="assess_go", disabled=bool(missing_all))
+        st.button("Submit Assessment", type="primary", on_click=_submit, key="assess_go",
+                  disabled=bool(missing_all) or not st.session_state.get("assess_confirm"))
 
 
 def page_assess() -> None:
@@ -344,7 +376,7 @@ def page_assess() -> None:
     if step == 0:
         _intro()
     _chips(step)
-    _progress()
+    _progress(step)
     st.write("")
     if step == REVIEW_STEP:
         _render_review()
