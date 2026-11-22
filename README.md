@@ -76,32 +76,32 @@ A 31-question assessment turns your answers into four learning dimensions and on
 ### 🏠 **Home**
 *Student-focused introduction with the Assess → Understand → Improve journey*
 
-![Home](screenshots/home.png)
+![Home](https://github.com/arun-248/cognivue-ai/blob/main/Home.png)
 
 ### 📝 **Assessment**
 *31 questions: 5 profile items, 19 Likert statements and 7 additional questions*
 
-![Assessment](screenshots/assessment.png)
+![Assessment](https://github.com/arun-248/cognivue-ai/blob/main/Assessment.png)
 
 ### 📈 **Results**
 *One predicted score, four learning-dimension cards, bar and radar charts*
 
-![Results](screenshots/results.png)
+![Results](https://github.com/arun-248/cognivue-ai/blob/main/Results.png)
 
 ### 🔍 **Why This Result?**
 *Per-student SHAP explanation with additivity check*
 
-![Explainability](screenshots/explain.png)
+![Explainability](https://github.com/arun-248/cognivue-ai/blob/main/Why%20This%20Result.png)
 
 ### 🧪 **Interventions**
 *Interactive activities with steps, ratings and reflections*
 
-![Interventions](screenshots/interventions.png)
+![Interventions](https://github.com/arun-248/cognivue-ai/blob/main/Interventions.png)
 
 ### 🔬 **Research & Experiments**
 *Model comparison, SHAP, K-Means, noise robustness and more*
 
-![Research](screenshots/research.png)
+![Research](https://github.com/arun-248/cognivue-ai/blob/main/Research%20%26%20Experiments.png)
 
 </div>
 
