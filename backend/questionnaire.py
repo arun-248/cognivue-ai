@@ -209,11 +209,13 @@ FEATURE_ORDER = [
 
 REQUIRED_KEYS = PROFILE_KEYS + LIKERT_ITEM_IDS  # 5 + 19 = 24
 
-# Everything a student answers in the app: 24 predictor answers + 7 direct answers.
-ASSESSMENT_KEYS = REQUIRED_KEYS + DIRECT_ITEM_IDS  # 31
+# Everything a student answers in the live app: only the 24 predictor answers. The seven Q12-Q18 statements
+# (DIRECT_SECTION) define the training target and stay in the research record and training pipeline, but they are
+# NOT asked in the live assessment because the Random Forest never receives them.
+ASSESSMENT_KEYS = list(REQUIRED_KEYS)  # 24
 
 assert len(DIRECT_ITEM_IDS) == 7
-assert len(ASSESSMENT_KEYS) == 31
+assert len(ASSESSMENT_KEYS) == 24
 assert not set(DIRECT_ITEM_IDS) & set(REQUIRED_KEYS)
 assert len(PROFILE_KEYS) == 5
 assert len(LIKERT_ITEM_IDS) == 19

@@ -90,7 +90,7 @@ def page_home():
                 st.button("Explore Research & Experiments", icon=":material/science:", on_click=goto, args=("Research & Experiments",), key="home_research")
 
     section_title("What is Cognivue AI?",
-                  "A learning-reflection tool for students who use Generative AI. You answer 31 short questions about how you use AI and how you study, "
+                  "A learning-reflection tool for students who use Generative AI. You answer 24 short questions about how you use AI and how you study, "
                   "and Cognivue AI gives you a questionnaire-based estimate, an explanation, and a learning activity.")
     md_html('<div class="grid g2">'
             + card("Why it matters", "Generative AI can help you learn faster. But if it does the thinking for you, skills like reasoning, checking answers and "
@@ -101,7 +101,7 @@ def page_home():
 
     section_title("Assess \u2192 Understand \u2192 Improve", "Three simple steps.")
     steps = [
-        ("Assess", "Answer 31 short questions about your AI use and learning habits. It takes a few minutes."),
+        ("Assess", "Answer 24 short questions about your AI use and learning habits. It takes a few minutes."),
         ("Understand", "See your estimated score, what influenced it, and how you score on four learning dimensions."),
         ("Improve", "Try a personalised activity that builds independent thinking and answer-checking habits."),
     ]

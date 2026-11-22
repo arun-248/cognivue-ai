@@ -1,10 +1,9 @@
 """
 ui/assessment.py
 ----------------
-31-question assessment (5 profile + 19 Likert + 7 direct overreliance), review page and submission.
+24-question assessment (5 profile + 19 Likert), review page and submission.
 
-The seven direct answers (keys D1-D7) are kept separate: they produce the Direct Overreliance Score and are
-never passed to preprocessing, the Random Forest, SHAP or K-Means.
+The seven Q12-Q18 target statements are not asked here: the Random Forest never receives them.
 
 * No default answers: every radio starts unselected.
 * Answers persist in st.session_state["answers"] while navigating sections.
@@ -21,14 +20,14 @@ from backend.interventions import evaluate_interventions
 from backend.model_loader import get_model_information
 from backend.prediction import predict_overreliance
 from backend.preprocessing import preprocess_responses
-from backend.questionnaire import ASSESSMENT_KEYS, DIRECT_SECTION, LIKERT_LABELS, LIKERT_SECTIONS, PROFILE_QUESTIONS, REQUIRED_KEYS
+from backend.questionnaire import ASSESSMENT_KEYS, LIKERT_LABELS, LIKERT_SECTIONS, PROFILE_QUESTIONS, REQUIRED_KEYS
 from backend.validation import ValidationError, validate_responses
 from ui.resources import get_models
 from ui.state import goto, request_scroll_top
 from ui.theme import esc, md_html, notice, stat
 
-TOTAL = len(ASSESSMENT_KEYS)  # 31
-REVIEW_STEP = 6
+TOTAL = len(ASSESSMENT_KEYS)  # 24
+REVIEW_STEP = 5
 
 STEP_PROMPTS = {
     0: ("Let's start with your study background",
@@ -50,7 +49,7 @@ STEP_PROMPTS = {
         "These additional statements describe how you used Generative AI over the past 30 days. They are not used to calculate your predicted score.",
         "Choose how much you agree with each statement"),
 }
-SHORT_NAMES = ["Profile", "Independent Learning", "Verification", "Metacognition", "Learning Benefits", "Additional Questions"]
+SHORT_NAMES = ["Profile", "Independent Learning", "Verification", "Metacognition", "Learning Benefits"]
 
 
 def _build_steps() -> list:
@@ -73,12 +72,6 @@ def _build_steps() -> list:
                 for item in sec["items"]
             ],
         })
-    steps.append({
-        "name": SHORT_NAMES[5],
-        "title": f"Section {DIRECT_SECTION['section']} \u00b7 {DIRECT_SECTION['title']}",
-        "kind": "likert",
-        "questions": [{"id": item["id"], "text": item["text"], "options": LIKERT_LABELS} for item in DIRECT_SECTION["items"]],
-    })
     return steps
 
 
@@ -177,9 +170,8 @@ def _submit() -> None:
     """Validate, preprocess and predict. Runs as a callback so it can change page."""
     st.session_state["submit_error"] = None
     answers = {k: v for k, v in _answers().items() if v is not None}
-    check = validate_responses(answers)  # the 24 predictor answers (D1-D7 are not part of the model path)
-    direct_ok = all(answers.get(f"D{i}") is not None for i in range(1, 8))
-    if not check.is_valid or not direct_ok:
+    check = validate_responses(answers)  # the 24 predictor answers
+    if not check.is_valid:
         st.session_state["submit_error"] = (
             "Some answers are missing or invalid. Please complete every question before submitting."
         )
@@ -188,7 +180,7 @@ def _submit() -> None:
         st.session_state["submit_error"] = "Please tick the confirmation box before submitting."
         return
     try:
-        student = preprocess_responses({k: v for k, v in answers.items() if k in REQUIRED_KEYS})  # model sees only the 24 predictor answers
+        student = preprocess_responses({k: v for k, v in answers.items() if k in REQUIRED_KEYS})
         models = get_models()
         prediction = predict_overreliance(models["random_forest"], student.frame, models["feature_order"])
         profiles = cluster_profiles(models["kmeans_model"], models["kmeans_scaler"])

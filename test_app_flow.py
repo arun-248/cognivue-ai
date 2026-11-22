@@ -84,7 +84,7 @@ DIRECT_GOLDEN = dict(zip(DIRECT_ITEM_IDS, ["Agree", "Agree", "Neutral", "Disagre
 GOLDEN.update(DIRECT_GOLDEN)
 
 STEP_IDS = [PROFILE_KEYS] + [CONSTRUCT_ITEMS[k] for k in (
-    "independent_learning_score", "verification_score", "metacognition_score", "learning_benefit_score")] + [DIRECT_ITEM_IDS]
+    "independent_learning_score", "verification_score", "metacognition_score", "learning_benefit_score")]
 
 ALL_PAGES = ["Home", "Assess", "Results", "Why This Result?", "Intervention", "Behavioural Insights", "Progress",
              "Research & Experiments", "Testing", "About", "Feature"]
@@ -100,7 +100,7 @@ def fill_all(at, answers=None):
 def submit_via_state(at, answers):
     """Place a complete set of answers in session state, open the review page, confirm and submit."""
     at.session_state["answers"] = dict(answers)
-    at.session_state["step"] = 6
+    at.session_state["step"] = 5
     at.session_state["nav"] = "Assess"
     at.session_state["assess_confirm"] = True
     run(at)
@@ -109,7 +109,7 @@ def submit_via_state(at, answers):
 
 def uniform_answers(likert: str, index: int) -> dict:
     answers = {q["key"]: q["options"][index][0] for q in PROFILE_QUESTIONS}
-    for item_id in LIKERT_ITEM_IDS + DIRECT_ITEM_IDS:
+    for item_id in LIKERT_ITEM_IDS:
         answers[item_id] = likert
     return answers
 
@@ -140,7 +140,7 @@ def main():
     ok("The assessment explains that it is not an examination and describes data use")
     radios = list(at.radio)
     assert len(radios) == 5 and all(r.value is None for r in radios)
-    assert "0 of 31 questions answered" in text and "31 remaining" in text
+    assert "0 of 24 questions answered" in text and "24 remaining" in text
     ok("Assessment opens with 5 profile questions, NO default answers and a progress indicator")
 
     click(at, "assess_next")
@@ -148,7 +148,7 @@ def main():
     ok("Next is blocked while profile questions are unanswered (clear error shown)")
 
     answer_step(at, {k: GOLDEN[k] for k in PROFILE_KEYS})
-    assert "5 of 31 questions answered" in all_text(at) and "this section: 5 of 5" in all_text(at)
+    assert "5 of 24 questions answered" in all_text(at) and "this section: 5 of 5" in all_text(at)
     click(at, "assess_next")
     assert at.session_state["step"] == 1 and len(list(at.radio)) == 5
     ok("Profile completed -> Independent learning section; progress shows answered, remaining and section counts")
@@ -163,19 +163,15 @@ def main():
     assert len(at.warning) == 0
     ok("Returning to a section restores its answers (no Streamlit warnings)")
 
-    for step_index in range(1, 6):
+    for step_index in range(1, 5):
         if step_index > 1:
             answer_step(at, {i: GOLDEN[i] for i in STEP_IDS[step_index]})
-        if step_index == 5:
-            t = all_text(at)
-            assert "Additional Questions" in t and "not used to calculate your predicted score" in t
-            for q in DIRECT_SECTION["items"]:
-                assert q["text"] in t, q["id"]
-            for hidden in ("Q12", "Q13", "Q14", "Q15", "Q16", "Q17", "Q18", "D1", "D7"):
-                assert hidden not in t.replace("D1", "").replace("D7", "") or hidden.startswith("D"), hidden
+        t = all_text(at)
+        for q in DIRECT_SECTION["items"]:
+            assert q["text"] not in t, "Q12-Q18 statement must not be asked in the live assessment"
         click(at, "assess_next")
-    assert at.session_state["step"] == 6
-    ok("All five question sections plus the Additional Questions section (exact wording, no Q12-Q18 labels) completed -> Review page")
+    assert at.session_state["step"] == 5
+    ok("All five question sections (24 questions) completed -> Review page; none of the seven Q12-Q18 target statements is asked")
 
     assert at.button(key="assess_go").disabled
     ok("Submit is disabled until the confirmation box is ticked")
@@ -187,8 +183,8 @@ def main():
     click(at, "review_edit_3")
     assert at.session_state["step"] == 3
     ok("Edit on the review page jumps to that section")
-    click(at, "assess_next"); click(at, "assess_next"); click(at, "assess_next")
-    assert at.session_state["step"] == 6 and at.session_state["assess_confirm"] is False
+    click(at, "assess_next"); click(at, "assess_next")
+    assert at.session_state["step"] == 5 and at.session_state["assess_confirm"] is False
     ok("Revisiting the review page requires confirming again")
 
     # ------------------------------------------------------------------
@@ -203,12 +199,12 @@ def main():
     ok(f"Submission produces the real Random Forest score {score:.4f} (matches the saved reference sample report)")
     assert [round(v, 1) for v in result["construct_scores"].values()] == [4.0, 4.0, 3.6, 4.0]
     assert "direct_score" not in result and "direct_values" not in result
-    ok("No direct score is calculated or stored: the seven additional answers are collected only")
+    ok("No direct score is calculated or stored; the seven Q12-Q18 answers are not collected at all")
     ok("Construct scores 4.0 / 4.0 / 3.6 / 4.0 calculated from the answers")
     text = all_text(at)
     assert "2.89" in text and "out of 5" in text and "Low Reliance" not in text and "High Reliance" not in text
-    for needle in ("Predicted Overreliance Score", "The predicted overreliance score is generated by the trained Random Forest model",
-                   "Summary of your learning behaviour", "Personalised recommendations", "not a diagnosis"):
+    for needle in ("Predicted Overreliance Score", "Predicted by the trained Random Forest model", "The predicted overreliance score is generated by the trained Random Forest model",
+                   "Calculated from your questionnaire responses", "shown from your selected answer", "Summary of your learning behaviour", "Personalised recommendations", "not a diagnosis"):
         assert needle in text, needle
     assert "2.75" not in text and "training data" not in text and "Q12" not in text and "Nested" not in text
     for needle in ("Your Overreliance Assessment Result", "The predicted overreliance score is generated by the trained Random Forest model using your reported learning habits and Generative AI usage patterns. It provides a continuous estimate on a scale of 1 to 5.",
@@ -227,7 +223,8 @@ def main():
     assert len(at.session_state["history"]) == 1
     ok("K-Means cluster 0 matches the saved reference report and the attempt is recorded")
 
-    # Same learning answers, different additional (direct) answers -> prediction, SHAP and cluster unchanged
+    assert "Calculated directly from your answers" not in text
+    # Extra Q12-Q18 keys, if ever supplied, must still be ignored by the model path -> prediction, SHAP and cluster unchanged
     outcomes = []
     for label in ("Strongly Disagree", "Strongly Agree"):
         at2 = new_app()
@@ -366,7 +363,7 @@ def main():
     at.session_state["nav"] = "Assess"
     run(at)
     fill_all(at)
-    assert at.session_state["step"] == 6
+    assert at.session_state["step"] == 5
     answers = dict(at.session_state["answers"])
     answers.pop("Q27")
     at.session_state["answers"] = answers

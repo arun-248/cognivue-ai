@@ -413,9 +413,9 @@ def main() -> None:
     ]
     assert [i["text"] for i in DIRECT_SECTION["items"]] == exact and DIRECT_SECTION["title"] == "Additional Questions"
     ok("The seven direct overreliance statements use the exact supplied wording and section title")
-    assert len(ASSESSMENT_KEYS) == 31 and len(REQUIRED_KEYS) == 24 and len(DIRECT_ITEM_IDS) == 7
+    assert len(ASSESSMENT_KEYS) == 24 == len(REQUIRED_KEYS) and len(DIRECT_ITEM_IDS) == 7 and not set(DIRECT_ITEM_IDS) & set(ASSESSMENT_KEYS)
     assert not set(DIRECT_ITEM_IDS) & set(REQUIRED_KEYS) and not set(DIRECT_ITEM_IDS) & set(TARGET_ITEM_IDS)
-    ok("The assessment has exactly 31 questions (24 predictor + 7 direct); the direct keys are separate from the predictor and Q12-Q18 keys")
+    ok("The live assessment has exactly 24 questions; the seven Q12-Q18 statements are kept only as a research definition and are not asked")
     assert len(FEATURE_ORDER) == 9 and list(student.frame.columns) == FEATURE_ORDER and student.frame.shape == (1, 9)
     ok("The Random Forest still receives exactly nine features, in the trained order")
     base = golden_responses()
