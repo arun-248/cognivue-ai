@@ -71,7 +71,7 @@ def sec_overview() -> None:
 
 
 def sec_dataset() -> None:
-    evidence("Final research modelling dataset: 249 responses")
+    dataset_banner()
     md_html('<div class="grid g2">'
             + card("Published IEEE DataPort dataset", "<b>Generative AI Usage, Overreliance, and Learning Behaviour Among Students: A Questionnaire-Based Dataset</b><br>"
                    f"250 anonymised responses \u00b7 42 questionnaire columns \u00b7 CSV/XLSX \u00b7 Creative Commons Attribution \u00b7 DOI {IEEE_DOI}")
@@ -82,7 +82,6 @@ def sec_dataset() -> None:
             + card("How the questions map to the model", "<b>Four predictor constructs</b> (Independent Learning, Verification, Metacognition, Learning Benefits), <b>five profile variables</b> (usage frequency, usage duration, age group, study year, prior GenAI experience) "
                    "make the <b>nine Random Forest features</b>. The <b>seven direct overreliance items</b> (Q12\u2013Q18) form the target and are never inputs.")
             + "</div>")
-    st.link_button("View Dataset on IEEE DataPort", IEEE_URL, icon=":material/open_in_new:", type="primary")
     st.write("")
     notice("The survey-platform collection record (274 submissions, 249 consented responses, 45 columns) is a different record from the published IEEE DataPort file (250 rows, 42 columns); the two have not been reconciled row by row, so they should not be described as identical.", "info")
     st.write("")
@@ -136,6 +135,7 @@ def sec_models() -> None:
     rows.append(("Final tuned model", "Random Forest", "249", "Nested CV (5×3 outer)", f"{n['MAE']:.4f}", f"{n['RMSE']:.4f}", f"{n['R2']:.4f}"))
     rows += [("Deep Learning experiment", m if m != "Random Forest" else "Random Forest (DL experiment folds)", "249", "Repeated 5-fold × 3", _pm(a, sa), _pm(b, sb), _pm(c, sc))
              for m, a, sa, b, sb, c, sc in R.DEEP_LEARNING]
+    rows += [("CTGAN augmentation experiment", m, "249", "Repeated 5-fold × 3", _pm(a, sa), _pm(b, sb), _pm(c, sc)) for m, (a, sa, b, sb, c, sc) in R.GAN.items()]
     table(["Experiment", "Model", "Dataset", "Evaluation", "MAE", "RMSE", "R²"], rows)
     notice("All rows use the 249-response dataset, but different experiments use different fold designs, so compare models within an experiment rather than across experiments.", "warn")
     sub("Final deployed Random Forest")
@@ -150,7 +150,7 @@ def sec_findings() -> None:
             + card("Predictive performance", f"On 249 respondents the Random Forest reached nested-CV MAE {n['MAE']:.3f} and R² {n['R2']:.3f}: about {R.RF_IMPROVEMENT_PERCENT:.1f}% lower MAE than a mean baseline, with moderate explained variance.")
             + card("Model choice", "Gradient Boosting, Random Forest and SVR were practically tied on MAE. The Random Forest was kept because it suits small tabular data and integrates with SHAP explanations.")
             + card("Drivers of the estimate", "SHAP ranks independent learning (39.98%) and verification (17.53%) highest; study year (13.80%) is third. Correlations agree in direction: independent learning ρ − 0.349, verification ρ − 0.334.")
-            + card("Experiments", "On the same 249 responses the Deep Learning network (MAE 0.576, R² 0.078) did not beat the Random Forest (MAE 0.533, R² 0.197). Noise degrades performance gradually at higher levels.")
+            + card("Experiments", "On the same 249 responses the Deep Learning network (MAE 0.576, R² 0.078) did not beat the Random Forest (MAE 0.533, R² 0.197). CTGAN-generated synthetic training rows also did not help (MAE 0.567 vs 0.533). Noise degrades performance gradually at higher levels.")
             + "</div>")
     sub("Intervention coverage")
     tab_interventions()
@@ -164,7 +164,6 @@ def sec_findings() -> None:
 
 def page_research_experiments() -> None:
     section_title("Research & Experiments", "Dataset, methods, model comparison and experiments behind Cognivue AI. All results use the final 249-response modelling dataset.")
-    dataset_banner()
     names = ["1 Overview & SDG 4", "2 Dataset", "3 Architecture", "4 Model Comparison", "5 Deep Learning", "6 K-Means", "7 SHAP Explainability",
              "8 Noise Robustness", "9 CTGAN Experiment", "10 Findings & Limitations", "11 Graphs & Visual Results"]
     fns = [sec_overview, sec_dataset, sec_architecture, sec_models, tab_deep_learning, tab_kmeans, tab_shap, tab_noise, tab_ctgan, sec_findings, tab_graphs]

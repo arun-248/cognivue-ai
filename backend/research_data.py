@@ -76,8 +76,8 @@ SPEARMAN = [
 ]
 
 # K-Means (K = 2 selected)
-KMEANS_SILHOUETTE = {2: 0.3618, 3: 0.2387, 4: 0.2296, 5: 0.2429, 6: 0.2363}
-KMEANS_INERTIA = {2: 1008.2842, 3: 813.5382, 4: 701.1810, 5: 611.3443, 6: 545.5146}
+KMEANS_SILHOUETTE = {2: 0.3618, 3: 0.2387, 4: 0.2296, 5: 0.2429, 6: 0.2310}
+KMEANS_INERTIA = {2: 1008.2842, 3: 813.5382, 4: 701.1810, 5: 611.3443, 6: 548.2776}
 KMEANS_DISTRIBUTION = [(0, 195, 78.31), (1, 54, 21.69)]
 KMEANS_FEATURE_MEANS = {
     0: {"independent_learning_score": 4.046, "verification_score": 4.008, "metacognition_score": 4.083, "learning_benefit_score": 3.892, "usage_frequency_encoded": 3.549, "usage_time_encoded": 3.477},
@@ -99,13 +99,21 @@ NOISE = [
     (30, 0.5331, 0.7115, 0.1771),
 ]
 
-# CTGAN augmentation - HISTORICAL RECORD ONLY (earlier 151-response run). Not shown in the final presentation:
-# it could not be repeated on 249 responses because the supplied notebook has no CTGAN code.
+# CTGAN augmentation, run on the final 249-response dataset (experiments/ctgan_249.py).
+# Same RepeatedKFold(5, 3, random_state=42) folds for both models. In every fold the CTGAN generator is fitted on the
+# TRAINING rows only (nine features + target); synthetic rows are added to the training rows only; the held-out fold
+# is real data. Mean over 15 folds (SD in brackets in the app).
 GAN = {
-    "Real-only Random Forest": (0.4798, 0.5866, 0.3989),
-    "GAN-augmented Random Forest": (0.5153, 0.6168, 0.3370),
+    # model: (MAE, MAE_SD, RMSE, RMSE_SD, R2, R2_SD)
+    "Real-only Random Forest": (0.5329, 0.0676, 0.6957, 0.0927, 0.1971, 0.1314),
+    "CTGAN-augmented Random Forest": (0.5674, 0.0627, 0.7261, 0.0839, 0.1198, 0.1568),
 }
-GAN_FACTS = {"synthetic_records": 604, "quality_measurements": 50, "mae_increase_percent": 7.4}
+GAN_FACTS = {
+    "folds": 15, "epochs": 300, "batch_size": 50, "pac": 10,
+    "synthetic_per_fold": 199,  # ~one synthetic row per real training row (199 or 200 training rows per fold)
+    "folds_ctgan_better_mae": 5, "mae_increase_percent": 6.5, "mean_mae_difference": 0.0345,
+    "library": "ctgan 0.11.1 (PyTorch)",
+}
 
 # Distribution of the training target (mean of the seven direct overreliance statements, 1-5) for the
 # 249 modelled respondents, computed from the published questionnaire file. Aggregates only.
@@ -174,12 +182,10 @@ EVIDENCE_GUIDE = [
 
 
 # ---------------------------------------------------------------------------
-# Evidence provenance. Every result shown in the app comes from the 249-response final modelling dataset.
-# Deep Learning was re-run on 249 (see DEEP_LEARNING). The CTGAN experiment (GAN, GAN_FACTS above) exists only for
-# an earlier 151-response snapshot; it is kept as a historical record and is NOT displayed as a result.
-EARLIER_SNAPSHOT_RESPONDENTS = 151
-EARLIER_SNAPSHOT_EXPERIMENTS = ("CTGAN augmentation",)
-HISTORICAL_DEEP_LEARNING_151 = [
-    ("Random Forest", 0.4904, 0.0597, 0.6076, 0.0629, 0.3681, 0.1107),
-    ("Deep Learning", 0.7327, 0.1693, 0.9347, 0.2056, -0.4999, 0.5511),
-]
+# HISTORICAL RECORD (not displayed anywhere in the app): results of an earlier experiment on a 151-response
+# snapshot, kept only so the research history is not lost. Every displayed result uses the 249-response dataset.
+HISTORICAL_151 = {
+    "respondents": 151,
+    "deep_learning": [("Random Forest", 0.4904, 0.0597, 0.6076, 0.0629, 0.3681, 0.1107), ("Deep Learning", 0.7327, 0.1693, 0.9347, 0.2056, -0.4999, 0.5511)],
+    "ctgan": {"Real-only Random Forest": (0.4798, 0.5866, 0.3989), "GAN-augmented Random Forest": (0.5153, 0.6168, 0.3370)},
+}

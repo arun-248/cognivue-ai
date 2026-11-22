@@ -137,12 +137,12 @@ def _global_section():
     st.write("")
     md_html('<div class="eyebrow">Part 2 \u00b7 Global feature importance (all study respondents)</div>')
     md_html('<div class="card"><h4>What matters most on average?</h4><p>This ranking is <b>not about you</b>. It is the average size of each feature\'s '
-            'SHAP contribution across the 151 respondents the model was trained on, so it describes the fitted model in general. Your individual explanation above can '
+            'SHAP contribution across the 249 respondents the model was trained on, so it describes the fitted model in general. Your individual explanation above can '
             'differ from this ranking.</p></div>')
     st.write("")
     with chart_card("Which features influence the model most, on average? (mean |SHAP|, training data)"):
         labels = [n for n, _, _ in SHAP_GLOBAL]
         charts.show(charts.hbar(labels, [v for _, v, _ in SHAP_GLOBAL], [C_PURPLE] * len(labels), "Mean absolute SHAP value", fmt="{:.3f}"), "why_global")
-        st.caption("Independent learning had the largest average influence (32.7%), followed by metacognition (16.1%), study year (15.1%) and verification (14.2%).")
+        st.caption("Independent learning had the largest average influence (40.0%), followed by verification (17.5%), study year (13.8%) and metacognition (9.1%).")
     notice("Global importance describes the fitted model on its training data. It is descriptive, not independent validation, and it is "
            "<b>not proof of causation</b>: a feature can be influential for prediction without causing the outcome.", "info")

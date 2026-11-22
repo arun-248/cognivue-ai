@@ -144,7 +144,7 @@ LIMITATIONS = [
     "Predictive performance is moderate (nested CV R\u00b2 about 0.20, MAE about 0.53) and there has been no external validation on an independent student population.",
     "SHAP and correlations describe the fitted model and this sample; they do not establish causation.",
     "The K-Means grouping is exploratory with moderate separation (silhouette 0.36) and is not a validated student typology.",
-    "The Deep Learning comparison (249 responses) did not beat the Random Forest. CTGAN augmentation was not repeated on the final dataset, so no synthetic-data result is claimed.",
+    "The Deep Learning network and the CTGAN-augmented Random Forest, both tested on the 249 responses with internal cross-validation, did not beat the plain Random Forest; other settings or larger data could behave differently.",
     "Performance degrades at higher input-noise levels, and Gaussian noise does not represent all real-world errors.",
     "The intervention rules use a heuristic midpoint of 3.0 and their effectiveness has not been experimentally validated.",
     "One questionnaire dataset from one institution was used, so results may not generalise.",
@@ -154,7 +154,7 @@ FUTURE = [
     "Run a longitudinal or controlled study to test whether the adaptive activities change verification and independent-reasoning behaviour.",
     "Examine optimal thresholds for the intervention rules instead of the heuristic midpoint.",
     "Add richer, consented behavioural measures alongside self-report, with clear privacy safeguards.",
-    "Repeat the CTGAN synthetic-data experiment on the final 249-response dataset, with its code included in the project.",
+    "Tune the CTGAN settings and test other synthetic-data methods once more real responses are available.",
     "Study fairness and robustness across programmes, years of study and prior AI experience.",
 ]
 

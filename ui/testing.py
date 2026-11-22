@@ -28,8 +28,7 @@ def page_testing():
     section_title("Testing", "Automated checks that the app reproduces the Colab pipeline and behaves safely.")
     data = load_test_results()
     if not data:
-        notice("No test results file was found. Run <code>py test_pipeline.py</code> and <code>py test_app_flow.py</code> in the project folder. Each run records its "
-               "results in <code>test_results.json</code>, which this page then displays. Nothing is shown as passed until the tests have actually run.", "warn")
+        notice("No test results file was found. The automated checks have not been run for this copy of the application. Nothing is shown as passed until the tests have actually run.", "warn")
         return
     tests = data.get("tests", [])
     passed = sum(t["status"] == "Pass" for t in tests)

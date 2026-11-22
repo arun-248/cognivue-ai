@@ -274,10 +274,10 @@ def main():
     # ------------------------------------------------------------------
     CATEGORY = "Behavioural insights"
     text = visit(at, "Behavioural Insights")
-    for needle in ("Cluster 0", "Stronger learning-strategy profile", "Silhouette score", "not a diagnosis", "Behavioural Insights uses exploratory clustering to identify groups of students with similar self-reported learning habits.", "Groups identified", "78.3%"):
+    for needle in ("Cluster 0", "Stronger learning-strategy profile", "Silhouette score", "not a diagnosis", "Behavioural Insights explores similarities in students\u2019 self-reported learning habits.", "Groups identified", "78.3%"):
         assert needle in text or needle in "".join(m.value for m in at.markdown), needle
-    assert charts_on_page(at) == 4
-    ok("Behavioural Insights shows group sizes, silhouette, averages, comparison charts and PCA with caveats")
+    assert charts_on_page(at) == 3
+    ok("Behavioural Insights shows group sizes, silhouette, the clustering inputs (no repeated radar), comparison charts and PCA with caveats")
 
     # ------------------------------------------------------------------
     CATEGORY = "Report and progress"
@@ -315,9 +315,10 @@ def main():
     ok("All 11 pages render without errors (with a result)")
     text = visit(at, "Research & Experiments")
     md = "".join(m.value for m in at.markdown)
+    assert md.count("Final Research Modelling Dataset") == 1, "dataset banner must appear only in the Dataset section"
     assert "Final Research Modelling Dataset" in md and "Anonymised, consented and usable student responses used for the final modelling experiments." in md
     assert "Dataset published on IEEE DataPort: 250 anonymised responses and 42 questionnaire columns. The final modelling experiments use 249 usable responses." in text + md
-    for gone in ("Updated modelling dataset", "Earlier experiments", "Earlier 151", "151-response", "Published dataset \u00b7 250", "(151 responses)", "GAN-Augmented", "7.4%"):
+    for gone in ("Updated modelling dataset", "Earlier experiments", "Earlier 151", "151-response", "Published dataset \u00b7 250", "(151 responses)", "7.4%", "0.5153"):
         assert gone not in text and gone not in md, gone
     for needle in ("Published IEEE DataPort dataset", "Final 249-response modelling sample", "10.21227/sf15-b979", "Direct overreliance indicators",
                    "I depend on generative AI to begin academic tasks", "30 (12.0%)", "102 (41.0%)", "Consolidated results table",
@@ -331,14 +332,14 @@ def main():
     ok("A 'View Dataset on IEEE DataPort' link button points to ieee-dataport.org")
     assert (PROJECT_ROOT / "assets" / "research_architecture.png").exists()
     ok("The supplied architecture diagram file assets/research_architecture.png is present and the Architecture section renders without errors (display checked in the browser)")
-    for n in range(1, 10):
+    for n in range(1, 11):
         assert f"Graph {n}:" in text or f"Graph {n}:" in md, n
     for needle in ("Eight-Model MAE Comparison", "Eight-Model RMSE Comparison", "Eight-Model R² Comparison", "Random Forest vs Mean and Median Baseline Models",
                    "SHAP Global Feature Importance", "K-Means Silhouette Score Comparison", "Random Forest Noise Robustness Analysis",
-                   "Deep Learning vs Random Forest", "Direct Overreliance Target Distribution", "Final modelling dataset (249 responses)"):
+                   "Deep Learning vs Random Forest", "Overreliance Target Score Distribution", "CTGAN-Augmented vs Real-Data Random Forest", "Final modelling dataset (249 responses)"):
         assert needle in text or needle in md, needle
     assert charts_on_page(at) >= 25
-    ok("Graphs & Visual Results shows all nine numbered graphs with titles, dataset (249), experiment and units; no 151-response or CTGAN values")
+    ok("Graphs & Visual Results shows all ten numbered graphs with titles, dataset (249), experiment and units; no 151-response values")
     home = visit(at, "Home")
     assert "Research architecture" not in home and "Research evaluation" not in home and "Nested CV" not in home and "Start Assessment" in [b.label for b in at.button]
     ok("Home has no research architecture/evaluation cards or technical metrics and keeps a prominent Start Assessment button")

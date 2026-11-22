@@ -1,90 +1,6 @@
 {
   "tests": [
     {
-      "suite": "Features",
-      "id": "F01",
-      "category": "Intervention activities",
-      "test": "Four separate activities exist, each with instructions, steps, tasks and reflection questions",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F02",
-      "category": "Intervention activities",
-      "test": "Every activity moves Not started -> In progress -> Completed",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F03",
-      "category": "Intervention activities",
-      "test": "Blank text, an unticked check and an invalid rating do not count as done",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F04",
-      "category": "Intervention activities",
-      "test": "The next recommended activity follows the weakest construct among those not yet completed",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F05",
-      "category": "Intervention activities",
-      "test": "The intervention summary counts completed activities and includes written reflections",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F06",
-      "category": "PDF report",
-      "test": "A valid multi-section PDF is generated",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F07",
-      "category": "PDF report",
-      "test": "The PDF contains the score, disclaimer, label, reflections, K-Means note and attempt comparison",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F08",
-      "category": "PDF report",
-      "test": "The report works with minimal inputs and unsupported characters are made PDF-safe",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F09",
-      "category": "Attempt history",
-      "test": "A progress file round-trips and holds derived scores only (no raw answers or identifiers)",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F10",
-      "category": "Attempt history",
-      "test": "Invalid, foreign, oversized or out-of-range progress files are rejected with clear messages",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F11",
-      "category": "Attempt history",
-      "test": "Histories merge without duplicates and attempt differences are computed correctly",
-      "status": "Pass"
-    },
-    {
-      "suite": "Features",
-      "id": "F12",
-      "category": "Evaluation file loader",
-      "test": "Missing, malformed, out-of-range or too-short evaluation files are refused; valid files yield correct metrics",
-      "status": "Pass"
-    },
-    {
       "suite": "Backend pipeline",
       "id": "B01",
       "category": "Model loading",
@@ -353,50 +269,148 @@
     {
       "suite": "Backend pipeline",
       "id": "B39",
-      "category": "The seven additional questions are separate from the model",
-      "test": "The seven direct overreliance statements use the exact supplied wording and section title",
+      "category": "Experiment tables match the saved fold-level outputs",
+      "test": "Deep Learning and CTGAN comparison values equal the means of their saved 15-fold outputs",
       "status": "Pass"
     },
     {
       "suite": "Backend pipeline",
       "id": "B40",
-      "category": "The seven additional questions are separate from the model",
-      "test": "The assessment has exactly 31 questions (24 predictor + 7 direct); the direct keys are separate from the predictor and Q12-Q18 keys",
+      "category": "Experiment tables match the saved fold-level outputs",
+      "test": "CTGAN folds: synthetic rows ~ one per training row, generated per fold from the training rows only",
       "status": "Pass"
     },
     {
       "suite": "Backend pipeline",
       "id": "B41",
       "category": "The seven additional questions are separate from the model",
-      "test": "The Random Forest still receives exactly nine features, in the trained order",
+      "test": "The seven direct overreliance statements use the exact supplied wording and section title",
       "status": "Pass"
     },
     {
       "suite": "Backend pipeline",
       "id": "B42",
       "category": "The seven additional questions are separate from the model",
-      "test": "Identical first 24 answers with different final seven answers give identical features, Random Forest prediction, SHAP contributions and K-Means cluster",
+      "test": "The assessment has exactly 31 questions (24 predictor + 7 direct); the direct keys are separate from the predictor and Q12-Q18 keys",
       "status": "Pass"
     },
     {
       "suite": "Backend pipeline",
       "id": "B43",
       "category": "The seven additional questions are separate from the model",
-      "test": "The Direct Overreliance Score changes with the seven answers (1.00 for all Strongly Disagree, 5.00 for all Strongly Agree)",
+      "test": "The Random Forest still receives exactly nine features, in the trained order",
       "status": "Pass"
     },
     {
       "suite": "Backend pipeline",
       "id": "B44",
       "category": "The seven additional questions are separate from the model",
-      "test": "The direct score is the plain average of the seven submitted answers",
+      "test": "Identical first 24 answers with different final seven answers give identical features, Random Forest prediction, SHAP contributions and K-Means cluster",
       "status": "Pass"
     },
     {
       "suite": "Backend pipeline",
       "id": "B45",
       "category": "The seven additional questions are separate from the model",
+      "test": "The Direct Overreliance Score changes with the seven answers (1.00 for all Strongly Disagree, 5.00 for all Strongly Agree)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B46",
+      "category": "The seven additional questions are separate from the model",
+      "test": "The direct score is the plain average of the seven submitted answers",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B47",
+      "category": "The seven additional questions are separate from the model",
       "test": "Overreliance Reflection suggestions appear only for statements answered Agree or Strongly Agree (none vs all seven)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F01",
+      "category": "Intervention activities",
+      "test": "Four separate activities exist, each with instructions, steps, tasks and reflection questions",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F02",
+      "category": "Intervention activities",
+      "test": "Every activity moves Not started -> In progress -> Completed",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F03",
+      "category": "Intervention activities",
+      "test": "Blank text, an unticked check and an invalid rating do not count as done",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F04",
+      "category": "Intervention activities",
+      "test": "The next recommended activity follows the weakest construct among those not yet completed",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F05",
+      "category": "Intervention activities",
+      "test": "The intervention summary counts completed activities and includes written reflections",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F06",
+      "category": "PDF report",
+      "test": "A valid multi-section PDF is generated",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F07",
+      "category": "PDF report",
+      "test": "The PDF contains the score, disclaimer, label, reflections, K-Means note and attempt comparison",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F08",
+      "category": "PDF report",
+      "test": "The report works with minimal inputs and unsupported characters are made PDF-safe",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F09",
+      "category": "Attempt history",
+      "test": "A progress file round-trips and holds derived scores only (no raw answers or identifiers)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F10",
+      "category": "Attempt history",
+      "test": "Invalid, foreign, oversized or out-of-range progress files are rejected with clear messages",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F11",
+      "category": "Attempt history",
+      "test": "Histories merge without duplicates and attempt differences are computed correctly",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F12",
+      "category": "Evaluation file loader",
+      "test": "Missing, malformed, out-of-range or too-short evaluation files are refused; valid files yield correct metrics",
       "status": "Pass"
     },
     {
@@ -564,7 +578,7 @@
       "suite": "App flow",
       "id": "A24",
       "category": "Behavioural insights",
-      "test": "Behavioural Insights shows group sizes, silhouette, averages, comparison charts and PCA with caveats",
+      "test": "Behavioural Insights shows group sizes, silhouette, the clustering inputs (no repeated radar), comparison charts and PCA with caveats",
       "status": "Pass"
     },
     {
@@ -634,7 +648,7 @@
       "suite": "App flow",
       "id": "A34",
       "category": "Pages",
-      "test": "Graphs & Visual Results shows all nine numbered graphs with titles, dataset (249), experiment and units; no 151-response or CTGAN values",
+      "test": "Graphs & Visual Results shows all ten numbered graphs with titles, dataset (249), experiment and units; no 151-response values",
       "status": "Pass"
     },
     {
@@ -722,7 +736,7 @@
       "status": "Pass"
     }
   ],
-  "generated": "2026-11-22 13:02",
+  "generated": "2026-11-22 17:58",
   "environment": {
     "python": "3.13.18",
     "streamlit": "1.66.1",

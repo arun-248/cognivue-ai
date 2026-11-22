@@ -183,15 +183,31 @@ def tab_noise():
 
 
 def tab_ctgan():
-    evidence("Final research modelling dataset: 249 responses", "Status: not repeated")
+    evidence("Final research modelling dataset: 249 responses", "Experimental model \u2013 not deployed", "Repeated 5-fold \u00d7 3 (15 folds)")
+    f = R.GAN_FACTS
+    st.caption("Experiment: does adding synthetic training rows from a Conditional Tabular GAN (CTGAN) improve the Random Forest? Both models use identical folds on the 249 responses.")
     md_html('<div class="grid g2">'
-            + card("CTGAN augmentation: not part of the final results", "CTGAN (synthetic-data augmentation) is a planned experiment. It has <b>not</b> been completed or verified on the final 249-response modelling dataset, "
-                   "so no CTGAN result is presented here.")
-            + card("Why it is not shown", "No verified CTGAN run on the final dataset is available, so no values, graphs or performance claims are shown. "
-                   "The deployed Random Forest and every result in this section use real responses only; no synthetic data is used anywhere in the app.")
+            + card("What was done", "In each of the 15 folds, a CTGAN was trained on the <b>training rows only</b> (the nine features and the target). It then generated about as many synthetic rows as there were real training rows. "
+                   "The CTGAN-augmented Random Forest was trained on real plus synthetic rows, and the baseline Random Forest on the real rows only. Both were scored on the same untouched, real held-out fold.")
+            + card("Settings", f"{f['library']}; {f['epochs']} epochs, batch size {f['batch_size']}, pac {f['pac']}; categorical profile codes treated as discrete columns; synthetic scores clipped to 1\u20135 and codes rounded to valid values. "
+                   "Random Forest settings are identical to the deployed model.")
             + "</div>")
     st.write("")
-    notice("The CTGAN experiment on the final 249-response dataset has not been completed. No CTGAN results are claimed, and completing it is listed as future work.", "info")
+    rows = [(m, _pm(a, sa), _pm(b, sb), _pm(c, sc)) for m, (a, sa, b, sb, c, sc) in R.GAN.items()]
+    table(["Model", "MAE (mean \u00b1 SD)", "RMSE (mean \u00b1 SD)", "R\u00b2 (mean \u00b1 SD)"], rows, selected=0)
+    st.write("")
+    names = list(R.GAN)
+    c1, c2 = st.columns(2, gap="large")
+    with c1:
+        with chart_card("Does synthetic data lower the error? (MAE, 249 responses)"):
+            charts.show(charts.hbar(names, [v[0] for v in R.GAN.values()], [BLUE, AMBER], "MAE (lower is better)", errors=[v[1] for v in R.GAN.values()], xrange=[0, 0.8]), "mi_gan_mae")
+    with c2:
+        with chart_card("Does synthetic data raise R\u00b2? (249 responses)"):
+            charts.show(charts.hbar(names, [v[4] for v in R.GAN.values()], [BLUE, AMBER], "R\u00b2 (higher is better)", errors=[v[5] for v in R.GAN.values()], xrange=[-0.1, 0.5]), "mi_gan_r2")
+    st.write("")
+    notice(f"CTGAN augmentation did <b>not</b> improve the Random Forest: MAE rose by about {f['mae_increase_percent']}% (mean difference {f['mean_mae_difference']:.3f}) and R\u00b2 fell. "
+           f"The augmented model had the lower error in only {f['folds_ctgan_better_mae']} of {f['folds']} folds. The real-data-only Random Forest therefore remains the final model, and synthetic data is not used anywhere in the app.", "info")
+    notice("Limitations: only one CTGAN configuration was tried (no tuning), the dataset is small for training a generative model, and the result comes from internal cross-validation. A different setting could behave differently.", "warn")
 
 
 def tab_interventions():

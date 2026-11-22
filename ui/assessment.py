@@ -201,7 +201,7 @@ def _submit() -> None:
     except Exception as exc:  # model files missing, version problems, etc.
         st.session_state["submit_error"] = (
             f"The prediction could not be generated ({type(exc).__name__}: {exc}). "
-            "Check that the models folder is present and that py test_pipeline.py passes."
+            "Please check that the application\u2019s model files are present and try again."
         )
         return
 

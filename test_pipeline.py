@@ -25,6 +25,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 import numpy as np
+from backend import research_data as R
 
 from backend.clustering import assign_cluster, cluster_profiles, pca_projection
 from backend.explainability import explain_prediction, get_explainer
@@ -382,6 +383,22 @@ def main() -> None:
     ok("The gauge illustration shows a 1-5 continuous estimate")
 
     # ------------------------------------------------------------------
+    section("10b. Experiment tables match the saved fold-level outputs")
+    import pandas as _pd
+    for name, ref in (("dl_249_folds.csv", {"Random Forest": R.DEEP_LEARNING[0], "Deep Learning": R.DEEP_LEARNING[1]}),
+                      ("ctgan_249_folds.csv", {"Real data only": ("", *R.GAN["Real-only Random Forest"]), "CTGAN-augmented": ("", *R.GAN["CTGAN-augmented Random Forest"])})):
+        fold_df = _pd.read_csv(PROJECT_ROOT / "experiments" / "results" / name)
+        assert fold_df.Fold.nunique() == 15
+        for model, row in ref.items():
+            sub_df = fold_df[fold_df.Model == model]
+            vals = (row[1], row[3], row[5]) if name.startswith("dl") else (row[1], row[3], row[5])
+            got = (sub_df.MAE.mean(), sub_df.RMSE.mean(), sub_df.R2.mean())
+            assert all(abs(a - b) < 6e-5 for a, b in zip(got, vals)), (name, model, got, vals)
+    ok("Deep Learning and CTGAN comparison values equal the means of their saved 15-fold outputs")
+    gan_folds = _pd.read_csv(PROJECT_ROOT / "experiments" / "results" / "ctgan_249_folds.csv")
+    assert gan_folds[gan_folds.Model == "CTGAN-augmented"].n_synth.min() >= 199 and gan_folds.n_train.max() <= 200
+    ok("CTGAN folds: synthetic rows ~ one per training row, generated per fold from the training rows only")
+
     section("11. The seven additional questions are separate from the model")
     from backend.direct import direct_score, reflection_records
     from backend.questionnaire import ASSESSMENT_KEYS, DIRECT_ITEM_IDS, DIRECT_SECTION

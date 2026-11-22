@@ -1,7 +1,6 @@
-"""ui/research_graphs.py - section 11: Graphs & Visual Results (nine graphs, each with title, caption, dataset version, units).
+"""ui/research_graphs.py - Graphs & Visual Results (ten graphs, each with title, caption, dataset and units).
 
-Every chart is drawn from the saved results in backend/research_data.py. If you later add a screenshot named
-assets/graphs/graph_<n>.png it is shown instead of the generated chart for that graph.
+Every chart is drawn from the saved experiment results. If a screenshot named assets/graphs/graph_<n>.png is added, it is shown instead.
 """
 
 from __future__ import annotations
@@ -40,8 +39,7 @@ def _metric_chart(idx: int, ylabel: str, color_top: str, key: str, fmt="{:.3f}",
 
 
 def tab_graphs() -> None:
-    section_title("Graphs & Visual Results", "Nine graphs drawn from the saved experiment results. Each names its dataset, experiment and metric units.")
-    notice("All nine graphs use the <b>final 249-response modelling dataset</b>; each one names its experiment below the chart.", "info")
+    section_title("Graphs & Visual Results", "Ten graphs drawn from the saved experiment results. Each names its dataset, experiment and metric units.")
     st.write("")
 
     cmp = R.MODEL_COMPARISON
@@ -98,6 +96,12 @@ def tab_graphs() -> None:
 
     def g9():
         charts.show(charts.vbar_grouped(t["bins"], {"Respondents": t["counts"]}, {"Respondents": PINK}, "Number of respondents", fmt="{:d}", height=320), "g9")
-    _frame(9, "Direct Overreliance Target Distribution", V249, f"Count of respondents per range of the 1–5 target (n = {t['n']}); mean {t['mean']:.2f}, SD {t['sd']:.2f}",
+    _frame(9, "Overreliance Target Score Distribution (training target)", V249, f"Count of respondents per range of the 1–5 target (n = {t['n']}); mean {t['mean']:.2f}, SD {t['sd']:.2f}",
            "The training target (mean of the seven direct statements, called the Overreliance Target Score here) is centred near 2.7 with most respondents between 2.0 and 3.5; few respondents are at the extremes. "
            "Because most targets sit in a narrow band, there is limited variation for the model to explain.", g9)
+
+    def g10():
+        names = list(R.GAN)
+        charts.show(charts.vbar_grouped(["MAE", "RMSE", "R²"], {n: [v[0], v[2], v[4]] for n, v in R.GAN.items()}, {names[0]: PURPLE, names[1]: AMBER}, "Metric value (MAE/RMSE rating points; R² unitless)", fmt="{:.3f}"), "g10")
+    _frame(10, "CTGAN-Augmented vs Real-Data Random Forest (Repeated 5-fold × 3)", V249, "MAE/RMSE in rating points (lower is better), R² unitless (higher is better); generator fitted on training rows only in each fold",
+           "Adding CTGAN-generated rows raised the error (MAE 0.567 vs 0.533) and lowered R² (0.120 vs 0.197). The augmented model had the lower error in only 5 of 15 folds, so synthetic data did not help here. Synthetic rows were created inside each training fold only; held-out folds contain real responses.", g10)
