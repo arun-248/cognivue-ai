@@ -18,12 +18,13 @@ logging.disable(logging.CRITICAL)  # silence harmless Streamlit bare-mode warnin
 PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+import numpy as np
 import streamlit as st
 from streamlit.testing.v1 import AppTest
 
 from backend import interventions as I
 from backend import model_loader as ML
-from backend.questionnaire import CONSTRUCT_ITEMS, LIKERT_ITEM_IDS, PROFILE_KEYS, PROFILE_QUESTIONS
+from backend.questionnaire import CONSTRUCT_ITEMS, DIRECT_ITEM_IDS, DIRECT_SECTION, LIKERT_ITEM_IDS, PROFILE_KEYS, PROFILE_QUESTIONS
 from testlog import TestLog
 
 LOG = TestLog("App flow", "A")
@@ -78,11 +79,15 @@ for _id in (CONSTRUCT_ITEMS["independent_learning_score"] + CONSTRUCT_ITEMS["ver
 for _id, _label in zip(CONSTRUCT_ITEMS["metacognition_score"], ["Agree", "Agree", "Agree", "Neutral", "Neutral"]):
     GOLDEN[_id] = _label
 
+# Direct Overreliance Assessment answers (golden): Agree, Agree, Neutral, Disagree, Agree, Neutral, Disagree -> sum 22, mean 22/7 = 3.1429
+DIRECT_GOLDEN = dict(zip(DIRECT_ITEM_IDS, ["Agree", "Agree", "Neutral", "Disagree", "Agree", "Neutral", "Disagree"]))
+GOLDEN.update(DIRECT_GOLDEN)
+
 STEP_IDS = [PROFILE_KEYS] + [CONSTRUCT_ITEMS[k] for k in (
-    "independent_learning_score", "verification_score", "metacognition_score", "learning_benefit_score")]
+    "independent_learning_score", "verification_score", "metacognition_score", "learning_benefit_score")] + [DIRECT_ITEM_IDS]
 
 ALL_PAGES = ["Home", "Assess", "Results", "Why This Result?", "Intervention", "Behavioural Insights", "Progress",
-             "Model Insights", "Research", "Testing", "About", "Feature"]
+             "Research & Experiments", "Testing", "About", "Feature"]
 
 
 def fill_all(at, answers=None):
@@ -95,7 +100,7 @@ def fill_all(at, answers=None):
 def submit_via_state(at, answers):
     """Place a complete set of answers in session state, open the review page, confirm and submit."""
     at.session_state["answers"] = dict(answers)
-    at.session_state["step"] = 5
+    at.session_state["step"] = 6
     at.session_state["nav"] = "Assess"
     at.session_state["assess_confirm"] = True
     run(at)
@@ -104,7 +109,7 @@ def submit_via_state(at, answers):
 
 def uniform_answers(likert: str, index: int) -> dict:
     answers = {q["key"]: q["options"][index][0] for q in PROFILE_QUESTIONS}
-    for item_id in LIKERT_ITEM_IDS:
+    for item_id in LIKERT_ITEM_IDS + DIRECT_ITEM_IDS:
         answers[item_id] = likert
     return answers
 
@@ -135,7 +140,7 @@ def main():
     ok("The assessment explains that it is not an examination and describes data use")
     radios = list(at.radio)
     assert len(radios) == 5 and all(r.value is None for r in radios)
-    assert "0 of 24 questions answered" in text and "24 remaining" in text
+    assert "0 of 31 questions answered" in text and "31 remaining" in text
     ok("Assessment opens with 5 profile questions, NO default answers and a progress indicator")
 
     click(at, "assess_next")
@@ -143,7 +148,7 @@ def main():
     ok("Next is blocked while profile questions are unanswered (clear error shown)")
 
     answer_step(at, {k: GOLDEN[k] for k in PROFILE_KEYS})
-    assert "5 of 24 questions answered" in all_text(at) and "this section: 5 of 5" in all_text(at)
+    assert "5 of 31 questions answered" in all_text(at) and "this section: 5 of 5" in all_text(at)
     click(at, "assess_next")
     assert at.session_state["step"] == 1 and len(list(at.radio)) == 5
     ok("Profile completed -> Independent learning section; progress shows answered, remaining and section counts")
@@ -158,12 +163,19 @@ def main():
     assert len(at.warning) == 0
     ok("Returning to a section restores its answers (no Streamlit warnings)")
 
-    for step_index in range(1, 5):
+    for step_index in range(1, 6):
         if step_index > 1:
             answer_step(at, {i: GOLDEN[i] for i in STEP_IDS[step_index]})
+        if step_index == 5:
+            t = all_text(at)
+            assert "Additional Questions" in t and "not used to calculate your predicted score" in t
+            for q in DIRECT_SECTION["items"]:
+                assert q["text"] in t, q["id"]
+            for hidden in ("Q12", "Q13", "Q14", "Q15", "Q16", "Q17", "Q18", "D1", "D7"):
+                assert hidden not in t.replace("D1", "").replace("D7", "") or hidden.startswith("D"), hidden
         click(at, "assess_next")
-    assert at.session_state["step"] == 5
-    ok("All four Likert sections completed -> Review page")
+    assert at.session_state["step"] == 6
+    ok("All five question sections plus the Additional Questions section (exact wording, no Q12-Q18 labels) completed -> Review page")
 
     assert at.button(key="assess_go").disabled
     ok("Submit is disabled until the confirmation box is ticked")
@@ -175,8 +187,8 @@ def main():
     click(at, "review_edit_3")
     assert at.session_state["step"] == 3
     ok("Edit on the review page jumps to that section")
-    click(at, "assess_next"); click(at, "assess_next")
-    assert at.session_state["step"] == 5 and at.session_state["assess_confirm"] is False
+    click(at, "assess_next"); click(at, "assess_next"); click(at, "assess_next")
+    assert at.session_state["step"] == 6 and at.session_state["assess_confirm"] is False
     ok("Revisiting the review page requires confirming again")
 
     # ------------------------------------------------------------------
@@ -187,20 +199,45 @@ def main():
     assert at.session_state["nav"] == "Results", at.session_state["submit_error"]
     result = at.session_state["result"]
     score = result["prediction"]["score"]
-    assert abs(score - 2.8551) < 5e-5, score
-    ok(f"Submission produces the real Random Forest score {score:.4f} (matches Colab respondent 118)")
+    assert abs(score - 2.8917) < 5e-5, score
+    ok(f"Submission produces the real Random Forest score {score:.4f} (matches the saved reference sample report)")
     assert [round(v, 1) for v in result["construct_scores"].values()] == [4.0, 4.0, 3.6, 4.0]
+    assert "direct_score" not in result and "direct_values" not in result
+    ok("No direct score is calculated or stored: the seven additional answers are collected only")
     ok("Construct scores 4.0 / 4.0 / 3.6 / 4.0 calculated from the answers")
     text = all_text(at)
-    assert "2.86" in text and "out of 5" in text and "Low Reliance" not in text and "High Reliance" not in text
-    for needle in ("Predicted overreliance score", "Calculated directly from your answers", "Summary of your learning behaviour",
-                   "Personalised recommendations", "not a diagnosis", "average output across its training data is 2.71"):
+    assert "2.89" in text and "out of 5" in text and "Low Reliance" not in text and "High Reliance" not in text
+    for needle in ("Predicted Overreliance Score", "The predicted overreliance score is generated by the trained Random Forest model",
+                   "Summary of your learning behaviour", "Personalised recommendations", "not a diagnosis"):
         assert needle in text, needle
+    assert "2.75" not in text and "training data" not in text and "Q12" not in text and "Nested" not in text
+    for needle in ("Your Overreliance Assessment Result", "The predicted overreliance score is generated by the trained Random Forest model using your reported learning habits and Generative AI usage patterns. It provides a continuous estimate on a scale of 1 to 5.",
+                   "Your four learning dimensions"):
+        assert needle in text or needle.upper() in text, needle
+    assert text.upper().count("PREDICTED OVERRELIANCE SCORE") == 2, text.upper().count("PREDICTED OVERRELIANCE SCORE")
+    for gone in ("Direct Overreliance", "DIRECT OVERRELIANCE", "two overreliance scores", "five dimensions", "Overreliance Reflection", "first 24 answers", "last seven", "Q22a", "Q22b", "Predictor construct"):
+        assert gone not in text, gone
+    for gone in ("How to read this result", "Accuracy and limitations", "What the estimate can and cannot say", "The estimate is moderately accurate"):
+        assert gone not in text, gone
+    assert "limited predictive performance" in text
+    ok("Results show exactly one predicted score and four dimension cards, with no direct score, fifth dimension or reflection card")
     assert charts_on_page(at) == 2
-    ok("Results separate the predicted score from the questionnaire scores, with summary, recommendations, baseline 2.71 and charts")
+    ok("Results show the plain-language RF explanation, with no 2.75 baseline, Q12-Q18 wording or technical metrics, plus summary, recommendations and charts")
     assert result["cluster"]["cluster_id"] == 0 and result["cluster"]["profile_label"].startswith("Stronger")
     assert len(at.session_state["history"]) == 1
-    ok("K-Means cluster 0 reproduced for respondent 118 and the attempt is recorded")
+    ok("K-Means cluster 0 matches the saved reference report and the attempt is recorded")
+
+    # Same learning answers, different additional (direct) answers -> prediction, SHAP and cluster unchanged
+    outcomes = []
+    for label in ("Strongly Disagree", "Strongly Agree"):
+        at2 = new_app()
+        submit_via_state(at2, {**GOLDEN, **{k: label for k in DIRECT_ITEM_IDS}})
+        visit(at2, "Why This Result?")
+        r2 = at2.session_state["result"]
+        outcomes.append((r2["prediction"]["score"], r2["cluster"]["cluster_id"], r2["shap"]["contributions"]["shap"].tolist()))
+    assert abs(outcomes[0][0] - outcomes[1][0]) < 1e-9 and outcomes[0][1] == outcomes[1][1] and np.allclose(outcomes[0][2], outcomes[1][2], atol=1e-9, rtol=0)
+    assert abs(outcomes[0][0] - score) < 1e-9
+    ok("In the running app, changing only the seven additional answers leaves the RF score, SHAP and cluster identical")
 
     # ------------------------------------------------------------------
     CATEGORY = "Explainability"
@@ -237,7 +274,7 @@ def main():
     # ------------------------------------------------------------------
     CATEGORY = "Behavioural insights"
     text = visit(at, "Behavioural Insights")
-    for needle in ("Cluster 0", "Stronger learning-strategy profile", "Silhouette score", "not</b> a diagnosis", "Groups identified", "79.5%"):
+    for needle in ("Cluster 0", "Stronger learning-strategy profile", "Silhouette score", "not a diagnosis", "Behavioural Insights uses exploratory clustering to identify groups of students with similar self-reported learning habits.", "Groups identified", "78.3%"):
         assert needle in text or needle in "".join(m.value for m in at.markdown), needle
     assert charts_on_page(at) == 4
     ok("Behavioural Insights shows group sizes, silhouette, averages, comparison charts and PCA with caveats")
@@ -275,14 +312,36 @@ def main():
     CATEGORY = "Pages"
     for page in ALL_PAGES:
         visit(at, page)
-    ok("All 12 pages render without errors (with a result)")
-    text = visit(at, "Research")
-    for needle in ("Direct Indicators of AI Overreliance (Q12", "I depend on generative AI to begin academic tasks", "22 (14.6%)", "58 (38.4%)"):
-        assert needle in text or needle in "".join(m.value for m in at.markdown), needle
-    ok("Research page shows Q12-Q18 with their statements and response counts")
-    text = visit(at, "Model Insights")
-    assert "not available yet" in "".join(m.value for m in at.markdown) and charts_on_page(at) >= 15
-    ok("Model Insights shows interactive charts and honestly reports that out-of-fold plots need a notebook export")
+    ok("All 11 pages render without errors (with a result)")
+    text = visit(at, "Research & Experiments")
+    md = "".join(m.value for m in at.markdown)
+    assert "Final Research Modelling Dataset" in md and "Anonymised, consented and usable student responses used for the final modelling experiments." in md
+    assert "Dataset published on IEEE DataPort: 250 anonymised responses and 42 questionnaire columns. The final modelling experiments use 249 usable responses." in text + md
+    for gone in ("Updated modelling dataset", "Earlier experiments", "Earlier 151", "151-response", "Published dataset \u00b7 250", "(151 responses)", "GAN-Augmented", "7.4%"):
+        assert gone not in text and gone not in md, gone
+    for needle in ("Published IEEE DataPort dataset", "Final 249-response modelling sample", "10.21227/sf15-b979", "Direct overreliance indicators",
+                   "I depend on generative AI to begin academic tasks", "30 (12.0%)", "102 (41.0%)", "Consolidated results table",
+                   "SDG 4", "Overreliance Target Score", "Four learning dimensions used as model inputs"):
+        assert needle in text or needle in md, needle
+    tabs = [t.label for t in at.tabs]
+    assert len(tabs) == 11 and tabs[0].endswith("Overview & SDG 4") and tabs[10].endswith("Graphs & Visual Results"), tabs
+    ok("Research & Experiments has exactly 11 sections in the requested order, with version labels, IEEE DataPort details and the four learning dimensions")
+    link = [b for b in at.get("link_button")] if at.get("link_button") else []
+    assert any("ieee-dataport.org" in str(getattr(b, "proto", b)) for b in link), "IEEE DataPort link button missing"
+    ok("A 'View Dataset on IEEE DataPort' link button points to ieee-dataport.org")
+    assert (PROJECT_ROOT / "assets" / "research_architecture.png").exists()
+    ok("The supplied architecture diagram file assets/research_architecture.png is present and the Architecture section renders without errors (display checked in the browser)")
+    for n in range(1, 10):
+        assert f"Graph {n}:" in text or f"Graph {n}:" in md, n
+    for needle in ("Eight-Model MAE Comparison", "Eight-Model RMSE Comparison", "Eight-Model R² Comparison", "Random Forest vs Mean and Median Baseline Models",
+                   "SHAP Global Feature Importance", "K-Means Silhouette Score Comparison", "Random Forest Noise Robustness Analysis",
+                   "Deep Learning vs Random Forest", "Direct Overreliance Target Distribution", "Final modelling dataset (249 responses)"):
+        assert needle in text or needle in md, needle
+    assert charts_on_page(at) >= 25
+    ok("Graphs & Visual Results shows all nine numbered graphs with titles, dataset (249), experiment and units; no 151-response or CTGAN values")
+    home = visit(at, "Home")
+    assert "Research architecture" not in home and "Research evaluation" not in home and "Nested CV" not in home and "Start Assessment" in [b.label for b in at.button]
+    ok("Home has no research architecture/evaluation cards or technical metrics and keeps a prominent Start Assessment button")
 
     # ------------------------------------------------------------------
     CATEGORY = "Start over and refresh"
@@ -295,7 +354,7 @@ def main():
     ok("Result pages show a friendly guard when there is no submitted assessment")
     for page in ALL_PAGES:
         visit(at, page)
-    ok("All 12 pages render without errors (without a result)")
+    ok("All 11 pages render without errors (without a result)")
     fresh = new_app()
     assert fresh.session_state["answers"] == {} and fresh.session_state["result"] is None and fresh.session_state["history"] == []
     ok("A page refresh (new session) starts clean: no answers, result or attempts are retained")
@@ -306,7 +365,7 @@ def main():
     at.session_state["nav"] = "Assess"
     run(at)
     fill_all(at)
-    assert at.session_state["step"] == 5
+    assert at.session_state["step"] == 6
     answers = dict(at.session_state["answers"])
     answers.pop("Q27")
     at.session_state["answers"] = answers
@@ -326,7 +385,7 @@ def main():
     assert at.session_state["nav"] == "Results" and res is not None
     assert all(r["Status"] == "Support recommended" for r in res["interventions"])
     text = visit(at, "Intervention")
-    assert "4 of 4" in text and "Support recommended" in text
+    assert "4 of 4" in text and "Suggested practice" in text and "Support recommended" not in text and "Below threshold" not in text and "Risk category" not in text
     ok("Low construct scores flag all four dimensions for targeted support")
     assert 1.0 <= res["prediction"]["score"] <= 5.0
     ok("A minimum-style questionnaire still yields a valid score in 1-5")
@@ -350,7 +409,7 @@ def main():
         assert at.session_state["nav"] == "Assess" and at.session_state["result"] is None
         assert "could not be generated" in at.session_state["submit_error"]
         ok("Submitting without models shows a friendly error and no result")
-        for page in ("Model Insights", "Behavioural Insights", "Home"):
+        for page in ("Research & Experiments", "Behavioural Insights", "Home"):
             at.session_state["nav"] = page
             run(at)  # no exception; the sections that need models show a friendly notice
         assert "could not be" in all_text(at) or "could not be" in "".join(m.value for m in at.markdown)

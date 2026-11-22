@@ -36,6 +36,7 @@ def make_snapshot(result: dict, timestamp: str | None = None) -> dict:
         "usage_frequency_code": int(result["features"]["usage_frequency_encoded"]),
         "usage_duration_code": int(result["features"]["usage_time_encoded"]),
         "cluster_id": int(result["cluster"]["cluster_id"]),
+        **({"direct_score": round(float(result["direct_score"]), 4)} if result.get("direct_score") is not None else {}),
     }
 
 
@@ -69,12 +70,18 @@ def _validate_attempt(item) -> dict:
     for name, v, hi in (("usage_frequency_code", freq, 5), ("usage_duration_code", dur, 5), ("cluster_id", cid, 1)):
         if not isinstance(v, int) or isinstance(v, bool) or not (0 <= v <= hi):
             raise ValueError(f"{name} is invalid.")
-    return {
+    direct = item.get("direct_score")
+    out = {
         "timestamp": ts.isoformat(),
         "predicted_score": round(float(score), 4),
         "construct_scores": {k: round(float(scores[k]), 4) for k in CONSTRUCTS},
         "usage_frequency_code": freq, "usage_duration_code": dur, "cluster_id": cid,
     }
+    if direct is not None:  # optional: files from before the direct assessment do not have it
+        if not isinstance(direct, (int, float)) or isinstance(direct, bool) or not (1.0 <= float(direct) <= 5.0):
+            raise ValueError("An attempt has a direct score outside 1-5.")
+        out["direct_score"] = round(float(direct), 4)
+    return out
 
 
 def import_history(text) -> list:

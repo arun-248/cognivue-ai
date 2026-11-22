@@ -175,13 +175,13 @@ def main() -> None:
     expected_features = [4.0, 4.0, 3.6, 4.0, 4.0, 3.0, 2.0, 1.0, 1.0]
     assert list(student.frame.columns) == FEATURE_ORDER
     assert np.allclose(student.frame.iloc[0].to_numpy(), expected_features)
-    ok("Nine model features equal the Colab values, in the trained order")
+    ok("Nine model features equal the expected values, in the trained order")
 
     sample = load_json("Cognivue_Sample_Student_Intervention.json")
     prediction = predict_overreliance(rf, student.frame, feature_order)
     assert abs(round(prediction["raw_prediction"], 4) - sample["raw_model_prediction"]) < 1e-4
     assert abs(round(prediction["score"], 4) - sample["predicted_overreliance_score"]) < 1e-4
-    ok(f"Prediction {prediction['score']:.4f} equals Colab {sample['predicted_overreliance_score']}")
+    ok(f"Prediction {prediction['score']:.4f} equals the saved reference report {sample['predicted_overreliance_score']}")
 
     explanation = explain_prediction(rf, student.frame, get_explainer(rf))
     assert abs(round(explanation["baseline"], 4) - sample["shap_base_value"]) < 1e-4
@@ -189,7 +189,7 @@ def main() -> None:
     for row, ref in zip(top3.itertuples(), sample["top_contributing_features"]):
         assert row.feature == ref["Feature"], (row.feature, ref["Feature"])
         assert abs(row.shap - ref["SHAP_Contribution"]) < 1e-8
-    ok("SHAP baseline and top-3 contributions equal the Colab sample report")
+    ok("SHAP baseline and top-3 contributions equal the saved reference sample report")
     assert explanation["verified"] and explanation["reconstruction_error"] < 1e-9
     ok(f"SHAP additivity verified (error {explanation['reconstruction_error']:.2e})")
 
@@ -197,7 +197,7 @@ def main() -> None:
     assert cluster["cluster_id"] == sample["cluster_id"]
     assert cluster["profile_label"] == sample["behavioural_profile"]
     assert abs(cluster["construct_average"] - sample["cluster_construct_average"]) < 1e-9
-    ok(f"K-Means cluster {cluster['cluster_id']} and profile label equal the Colab sample report")
+    ok(f"K-Means cluster {cluster['cluster_id']} and profile label equal the saved reference sample report")
 
     records = evaluate_interventions(student.construct_scores)
     assert len(records) == len(sample["interventions"])
@@ -276,8 +276,8 @@ def main() -> None:
     ok("Extreme all-minimum and all-maximum questionnaires give valid scores")
 
     again = predict_overreliance(rf, preprocess_responses(golden_responses()).frame, feature_order)
-    assert again["raw_prediction"] == prediction["raw_prediction"]
-    ok("Predictions are deterministic")
+    assert abs(again["raw_prediction"] - prediction["raw_prediction"]) < 1e-9  # forest uses 2 threads: sums may differ by ~1e-16
+    ok("Predictions are deterministic (to within floating-point rounding, about 1e-16)")
 
     # ------------------------------------------------------------------
     section("7. Wording check")
@@ -292,22 +292,22 @@ def main() -> None:
     section("8. K-Means groups derived from the saved model")
     profiles = cluster_profiles(models["kmeans_model"], models["kmeans_scaler"])
     from backend import research_data as RD
-    assert [(p["size"]) for p in profiles] == [120, 31]
-    assert [round(p["percent"], 2) for p in profiles] == [79.47, 20.53]
-    ok("Cluster sizes from the saved model are 120 and 31 (79.47% / 20.53%)")
+    assert [(p["size"]) for p in profiles] == [195, 54]
+    assert [round(p["percent"], 2) for p in profiles] == [78.31, 21.69]
+    ok("Cluster sizes from the saved model are 195 and 54 (78.31% / 21.69%)")
     for p in profiles:
         for feature, value in RD.KMEANS_FEATURE_MEANS[p["cluster_id"]].items():
             assert abs(p["centroid"][feature] - value) < 1e-3, (p["cluster_id"], feature)
-    ok("Centroids (inverse-transformed) equal the Colab cluster means")
+    ok("Centroids (inverse-transformed) equal the saved cluster means")
     assert profiles[0]["label"].startswith("Stronger") and profiles[1]["label"].startswith("Developing")
     assert profiles[0]["construct_mean"] > profiles[1]["construct_mean"]
     ok("Profile labels are derived from the fitted centroids (higher construct centroids = stronger group)")
     meta_k = models["kmeans_metadata"]
-    assert abs(meta_k["selected_silhouette"] - 0.3848) < 1e-4 and meta_k["selected_k"] == 2
+    assert abs(meta_k["selected_silhouette"] - 0.3618) < 1e-4 and meta_k["selected_k"] == 2
     assert abs(models["kmeans_model"].inertia_ - RD.KMEANS_INERTIA[2]) < 1e-3
     proj = pca_projection(models["kmeans_model"], models["kmeans_scaler"], models["kmeans_pca"], student.frame)
     assert abs(sum(proj["explained_variance"]) - RD.PCA_EXPLAINED_VARIANCE) < 1e-4 and proj["student"] is not None
-    ok("Silhouette 0.3848, inertia and PCA explained variance 0.8096 match the saved objects")
+    ok("Silhouette 0.3618, inertia and PCA explained variance 0.7921 match the saved objects")
     # every assignment path agrees with the centroid labels
     for answers in (golden_responses(), random_responses(random.Random(7))):
         st_ = preprocess_responses(answers)
@@ -368,9 +368,9 @@ def main() -> None:
     # ------------------------------------------------------------------
     section("10. Research data and scale consistency")
     for q, text, counts in RD.DIRECT_INDICATORS:
-        assert sum(counts) == RD.DATASET["consented"] == 151, q
+        assert sum(counts) == RD.DATASET["consented"] == 249, q
     assert [q for q, _, _ in RD.DIRECT_INDICATORS] == TARGET_ITEM_IDS
-    ok("Q12-Q18 response distributions each sum to the 151 consented respondents")
+    ok("Q12-Q18 response distributions each sum to the 249 modelled respondents")
     forbidden = ["1\u20137", "1-7", "out of 7", "Low \u00b7 Moderate", "Low · Moderate", "High Reliance", "Low Reliance", "Moderate Reliance", "risk level", "Risk level"]
     for path in list((PROJECT_ROOT / "ui").glob("*.py")) + [PROJECT_ROOT / "app.py"]:
         text = path.read_text(encoding="utf-8")
@@ -380,6 +380,50 @@ def main() -> None:
     import ui.art as art
     assert "Continuous model estimate" in art.ART["gauge"] and ">7<" not in art.ART["gauge"]
     ok("The gauge illustration shows a 1-5 continuous estimate")
+
+    # ------------------------------------------------------------------
+    section("11. The seven additional questions are separate from the model")
+    from backend.direct import direct_score, reflection_records
+    from backend.questionnaire import ASSESSMENT_KEYS, DIRECT_ITEM_IDS, DIRECT_SECTION
+    exact = [
+        "I depend on generative AI to begin academic tasks that I could attempt independently.",
+        "I find it difficult to complete certain academic tasks when generative AI is unavailable.",
+        "I often accept AI-generated answers without developing my own solution first.",
+        "I rely on generative AI even when I have enough knowledge to solve a problem myself.",
+        "I feel less confident in my ability to solve academic problems independently when I cannot use generative AI.",
+        "I sometimes submit or use AI-generated solutions without fully understanding how they work.",
+        "After receiving a suggestion from Generative AI, I find it difficult to decide on an answer independently.",
+    ]
+    assert [i["text"] for i in DIRECT_SECTION["items"]] == exact and DIRECT_SECTION["title"] == "Additional Questions"
+    ok("The seven direct overreliance statements use the exact supplied wording and section title")
+    assert len(ASSESSMENT_KEYS) == 31 and len(REQUIRED_KEYS) == 24 and len(DIRECT_ITEM_IDS) == 7
+    assert not set(DIRECT_ITEM_IDS) & set(REQUIRED_KEYS) and not set(DIRECT_ITEM_IDS) & set(TARGET_ITEM_IDS)
+    ok("The assessment has exactly 31 questions (24 predictor + 7 direct); the direct keys are separate from the predictor and Q12-Q18 keys")
+    assert len(FEATURE_ORDER) == 9 and list(student.frame.columns) == FEATURE_ORDER and student.frame.shape == (1, 9)
+    ok("The Random Forest still receives exactly nine features, in the trained order")
+    base = golden_responses()
+    version_a = {**base, **{k: "Strongly Disagree" for k in DIRECT_ITEM_IDS}}
+    version_b = {**base, **{k: "Strongly Agree" for k in DIRECT_ITEM_IDS}}
+    results = []
+    for version in (base, version_a, version_b):
+        feats = preprocess_responses({k: v for k, v in version.items() if k in REQUIRED_KEYS})
+        pred = predict_overreliance(rf, feats.frame, feature_order)
+        expl = explain_prediction(rf, feats.frame, get_explainer(rf))
+        clus = assign_cluster(models["kmeans_model"], models["kmeans_scaler"], feats.frame)
+        results.append((pred["raw_prediction"], pred["score"], expl["contributions"]["shap"].tolist(), clus["cluster_id"], feats.frame.to_numpy().tolist()))
+    for other in results[1:]:
+        assert abs(other[0] - results[0][0]) < 1e-9 and abs(other[1] - results[0][1]) < 1e-9
+        assert np.allclose(other[2], results[0][2], atol=1e-9, rtol=0)
+        assert other[3] == results[0][3] and other[4] == results[0][4]  # cluster id and the nine feature values are exactly equal
+    ok("Identical first 24 answers with different final seven answers give identical features, Random Forest prediction, SHAP contributions and K-Means cluster")
+    assert abs(direct_score(version_a) - 1.0) < 1e-12 and abs(direct_score(version_b) - 5.0) < 1e-12
+    ok("The Direct Overreliance Score changes with the seven answers (1.00 for all Strongly Disagree, 5.00 for all Strongly Agree)")
+    mixed = {**base, **dict(zip(DIRECT_ITEM_IDS, [1, 2, 3, 4, 5, 4, 2]))}
+    assert abs(direct_score(mixed) - 21 / 7) < 1e-12
+    ok("The direct score is the plain average of the seven submitted answers")
+    assert not any(k in validate_responses({**base, **{q: "Agree" for q in TARGET_ITEM_IDS}}).errors for k in DIRECT_ITEM_IDS)
+    assert reflection_records(version_a) == [] and len(reflection_records(version_b)) == 7
+    ok("Overreliance Reflection suggestions appear only for statements answered Agree or Strongly Agree (none vs all seven)")
 
     LOG.save()
     print("\n" + "=" * 66)

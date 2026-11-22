@@ -16,20 +16,20 @@ from ui.theme import card, chart_card, esc, md_html, notice, section_title, stat
 def tab_architecture():
     md_html(arch_html())
     st.write("")
-    notice("The questionnaire study is a single dataset: 151 consented student responses. The supervised pipeline predicts the overreliance score; K-Means, "
-           "the Deep Learning model, the noise experiment and the CTGAN experiment are separate research components and are not part of the live prediction.", "info")
+    notice("The questionnaire study is a single dataset: 249 consented student responses. The supervised pipeline predicts the overreliance score; K-Means, "
+           "the Deep Learning comparison and the noise experiment are separate research components and are not part of the live prediction.", "info")
 
 
 def tab_dataset():
     d = R.DATASET
     md_html('<div class="grid g4">'
-            + stat(f'{d["original_rows"]} \u00d7 {d["original_columns"]}', "Original dataset", "rows \u00d7 columns")
+            + stat(f'{d["original_rows"]} \u00d7 {d["original_columns"]}', "Survey-platform record", "submissions \u00d7 columns (collection record)")
             + stat(str(d["consented"]), "Consented respondents", "used for modelling", "#109A8A")
             + stat(str(d["not_consented"]), "Not consented", "excluded", "#D97706")
             + stat(str(d["features"]), "Model input features", "9 columns, fixed order") + "</div>")
     st.write("")
     md_html('<div class="grid g2">'
-            + card("What was used", "Only the 151 consented responses were used for the main quantitative modelling. They had complete responses. Timestamp and email were excluded. "
+            + card("What was used", "The 249 consented responses were used for the main quantitative modelling (the published questionnaire dataset has 250 anonymised rows; one respondent who selected \u201cPrefer not to say\u201d for age could not be encoded and was excluded). They had complete responses. Timestamp and email were excluded. "
                    "Open-ended answers (Q40\u2013Q42) were kept separate from the quantitative modelling. No completely duplicated full records were identified.")
             + card("Questionnaire structure", "Demographic questions, Generative AI usage questions, Likert statements and open-ended questions. Multi-select questions Q6, Q9 and Q11 were "
                    "multi-hot encoded. Contradictory selections (for example a specific tool and \u201cnot used\u201d) were preserved rather than silently corrected.")
@@ -67,9 +67,9 @@ def tab_direct():
     labels = [q for q, _, _ in R.DIRECT_INDICATORS]
     totals = [sum(c) for _, _, c in R.DIRECT_INDICATORS]
     counts_by_label = {lab: [c[i] for _, _, c in R.DIRECT_INDICATORS] for i, lab in enumerate(R.LIKERT_ORDER)}
-    with chart_card("How did the 151 respondents answer the seven direct indicators?"):
+    with chart_card("How did the 249 respondents answer the seven direct indicators?"):
         charts.show(charts.stacked_distribution(labels, counts_by_label, totals), "res_direct")
-        st.caption("Each bar is 100% of the 151 consented respondents. Orange = disagreement, grey = neutral, blue = agreement. Hover a segment for the exact count. "
+        st.caption("Each bar is 100% of the 249 modelled respondents. Orange = disagreement, grey = neutral, blue = agreement. Hover a segment for the exact count. "
                    "Neutral was the most common answer for Q12, Q13, Q14, Q17 and Q18; Disagree was the most common for Q15 and Q16.")
     st.write("")
     head = "".join(f"<th>{esc(l)}</th>" for l in R.LIKERT_ORDER)
@@ -79,14 +79,14 @@ def tab_direct():
     )
     md_html(f'<div class="card" style="overflow-x:auto"><table class="rtable"><tr><th>Item</th><th>Statement</th>{head}<th>Total</th></tr>{rows}</table></div>')
     st.write("")
-    notice("Counts are response counts among the 151 consented respondents (19 non-consented responses are excluded). Q17 had no Strongly Agree responses. "
-           "Cronbach's alpha for these seven items is 0.872. These distributions describe the research sample and are not diagnostic criteria.", "info")
+    notice("Counts are response counts among the 249 modelled respondents (25 non-consented responses are excluded). "
+           f"Cronbach's alpha for these seven items is {R.RELIABILITY[0][1]:.3f}. These distributions describe the research sample and are not diagnostic criteria.", "info")
 
 
 def tab_reliability():
     table(["Construct", "Cronbach's alpha"], [(n, f"{a:.4f}") for n, a in R.RELIABILITY])
     st.write("")
-    notice("The first five scales show good internal consistency. The six-item positive/negative outcome scale had a very low alpha (0.2269), which is why Q36 and Q38 were kept "
+    notice("The first five scales show good internal consistency. The six-item positive/negative outcome scale had a very low alpha (0.2262), which is why Q36 and Q38 were kept "
            "separate from the positive learning-benefit construct.", "info")
 
 
@@ -113,8 +113,8 @@ def tab_model():
 
 def tab_xai():
     md_html('<div class="grid g2">'
-            + card("Method", "SHAP TreeExplainer on the saved Random Forest. Values are additive: baseline + sum of SHAP values reconstructs the model output (maximum error 0.0 in the Colab experiment; the app re-checks every explanation).")
-            + card("Global ranking", "Independent learning (32.7%), metacognition (16.1%), study year (15.1%), verification (14.2%), learning benefits (7.3%), then usage frequency, usage duration, experience and age.")
+            + card("Method", "SHAP TreeExplainer on the saved Random Forest. Values are additive: baseline + sum of SHAP values reconstructs the model output (maximum error about 1e-15 in the re-run on 249 respondents; the app re-checks every explanation).")
+            + card("Global ranking", "Independent learning (40.0%), verification (17.5%), study year (13.8%), metacognition (9.1%), usage frequency (8.4%), then experience, learning benefits, usage duration and age.")
             + card("Reading SHAP", "A positive value pushes the model's estimate higher and a negative value pushes it lower, relative to the baseline.")
             + card("Not causation", "SHAP identifies influential predictors in the fitted model. Correlated predictors can share attribution, and the results do not show that any factor causes overreliance.")
             + "</div>")
@@ -130,22 +130,21 @@ def tab_interventions():
 
 def tab_experiments():
     md_html('<div class="grid g2">'
-            + card("Deep Learning comparison", f"{R.DL_ARCHITECTURE}. MAE 0.7327 vs Random Forest 0.4904; R\u00b2 \u22120.4999 vs 0.3681. The Random Forest performed better; the neural network is not deployed.")
-            + card("K-Means profiling", "Six features, K = 2 (silhouette 0.3848), clusters of 120 and 31 respondents. Exploratory only.")
-            + card("Noise robustness", "Stable at 0\u20135% noise (R\u00b2 0.399 \u2192 0.399), degrading at 30% (R\u00b2 0.223).")
-            + card("CTGAN augmentation", "Synthetic data increased MAE by about 7.4% and did not improve the model; the real-data-only Random Forest is final.")
+            + card("Deep Learning comparison", f"{R.DL_ARCHITECTURE}. On 249 responses: MAE 0.5763 vs Random Forest 0.5329; R\u00b2 0.0780 vs 0.1969. The Random Forest performed better; the neural network is not deployed.")
+            + card("K-Means profiling", "Six features, K = 2 (silhouette 0.3618), clusters of 195 and 54 respondents. Exploratory only.")
+            + card("Noise robustness", "Stable at 0\u20135% noise (R\u00b2 0.225 \u2192 0.226), degrading at higher levels (R\u00b2 0.177 at 30%).")
             + "</div>")
     st.write("")
     notice("Details, tables and charts are on the Model Insights page.", "info")
 
 
 LIMITATIONS = [
-    "The data are self-reported questionnaire answers from 151 consented respondents; the app does not analyse real AI prompts, conversations or usage logs.",
+    "The data are self-reported questionnaire answers from 249 consented respondents; the app does not analyse real AI prompts, conversations or usage logs.",
     "The score is an estimate, not a diagnosis, and does not show that AI causes cognitive decline.",
-    "Predictive performance is moderate (nested CV R\u00b2 about 0.35, MAE about 0.50) and there has been no external validation on an independent student population.",
+    "Predictive performance is moderate (nested CV R\u00b2 about 0.20, MAE about 0.53) and there has been no external validation on an independent student population.",
     "SHAP and correlations describe the fitted model and this sample; they do not establish causation.",
-    "The K-Means grouping is exploratory with moderate separation (silhouette 0.38) and is not a validated student typology.",
-    "The Deep Learning model underperformed the Random Forest, and CTGAN augmentation did not improve it.",
+    "The K-Means grouping is exploratory with moderate separation (silhouette 0.36) and is not a validated student typology.",
+    "The Deep Learning comparison (249 responses) did not beat the Random Forest. CTGAN augmentation was not repeated on the final dataset, so no synthetic-data result is claimed.",
     "Performance degrades at higher input-noise levels, and Gaussian noise does not represent all real-world errors.",
     "The intervention rules use a heuristic midpoint of 3.0 and their effectiveness has not been experimentally validated.",
     "One questionnaire dataset from one institution was used, so results may not generalise.",
@@ -155,6 +154,7 @@ FUTURE = [
     "Run a longitudinal or controlled study to test whether the adaptive activities change verification and independent-reasoning behaviour.",
     "Examine optimal thresholds for the intervention rules instead of the heuristic midpoint.",
     "Add richer, consented behavioural measures alongside self-report, with clear privacy safeguards.",
+    "Repeat the CTGAN synthetic-data experiment on the final 249-response dataset, with its code included in the project.",
     "Study fairness and robustness across programmes, years of study and prior AI experience.",
 ]
 

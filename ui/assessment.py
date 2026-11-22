@@ -1,7 +1,10 @@
 """
 ui/assessment.py
 ----------------
-24-question assessment (5 profile + 19 Likert), review page and submission.
+31-question assessment (5 profile + 19 Likert + 7 direct overreliance), review page and submission.
+
+The seven direct answers (keys D1-D7) are kept separate: they produce the Direct Overreliance Score and are
+never passed to preprocessing, the Random Forest, SHAP or K-Means.
 
 * No default answers: every radio starts unselected.
 * Answers persist in st.session_state["answers"] while navigating sections.
@@ -18,14 +21,14 @@ from backend.interventions import evaluate_interventions
 from backend.model_loader import get_model_information
 from backend.prediction import predict_overreliance
 from backend.preprocessing import preprocess_responses
-from backend.questionnaire import LIKERT_LABELS, LIKERT_SECTIONS, PROFILE_QUESTIONS, REQUIRED_KEYS
+from backend.questionnaire import ASSESSMENT_KEYS, DIRECT_SECTION, LIKERT_LABELS, LIKERT_SECTIONS, PROFILE_QUESTIONS, REQUIRED_KEYS
 from backend.validation import ValidationError, validate_responses
 from ui.resources import get_models
 from ui.state import goto, request_scroll_top
 from ui.theme import esc, md_html, notice, stat
 
-TOTAL = len(REQUIRED_KEYS)  # 24
-REVIEW_STEP = 5
+TOTAL = len(ASSESSMENT_KEYS)  # 31
+REVIEW_STEP = 6
 
 STEP_PROMPTS = {
     0: ("Let's start with your study background",
@@ -43,8 +46,11 @@ STEP_PROMPTS = {
     4: ("What does Generative AI do for your learning?",
         "Consider the outcomes you have noticed over the past 30 days.",
         "Choose how much you agree with each statement"),
+    5: ("How do you use AI when you could work on your own?",
+        "These additional statements describe how you used Generative AI over the past 30 days. They are not used to calculate your predicted score.",
+        "Choose how much you agree with each statement"),
 }
-SHORT_NAMES = ["Profile", "Independent Learning", "Verification", "Metacognition", "Learning Benefits"]
+SHORT_NAMES = ["Profile", "Independent Learning", "Verification", "Metacognition", "Learning Benefits", "Additional Questions"]
 
 
 def _build_steps() -> list:
@@ -67,6 +73,12 @@ def _build_steps() -> list:
                 for item in sec["items"]
             ],
         })
+    steps.append({
+        "name": SHORT_NAMES[5],
+        "title": f"Section {DIRECT_SECTION['section']} \u00b7 {DIRECT_SECTION['title']}",
+        "kind": "likert",
+        "questions": [{"id": item["id"], "text": item["text"], "options": LIKERT_LABELS} for item in DIRECT_SECTION["items"]],
+    })
     return steps
 
 
@@ -165,8 +177,9 @@ def _submit() -> None:
     """Validate, preprocess and predict. Runs as a callback so it can change page."""
     st.session_state["submit_error"] = None
     answers = {k: v for k, v in _answers().items() if v is not None}
-    check = validate_responses(answers)
-    if not check.is_valid:
+    check = validate_responses(answers)  # the 24 predictor answers (D1-D7 are not part of the model path)
+    direct_ok = all(answers.get(f"D{i}") is not None for i in range(1, 8))
+    if not check.is_valid or not direct_ok:
         st.session_state["submit_error"] = (
             "Some answers are missing or invalid. Please complete every question before submitting."
         )
@@ -175,7 +188,7 @@ def _submit() -> None:
         st.session_state["submit_error"] = "Please tick the confirmation box before submitting."
         return
     try:
-        student = preprocess_responses(answers)
+        student = preprocess_responses({k: v for k, v in answers.items() if k in REQUIRED_KEYS})  # model sees only the 24 predictor answers
         models = get_models()
         prediction = predict_overreliance(models["random_forest"], student.frame, models["feature_order"])
         profiles = cluster_profiles(models["kmeans_model"], models["kmeans_scaler"])
@@ -225,10 +238,10 @@ def _intro() -> None:
     )
     md_html(
         '<div class="grid g4">'
-        + stat(str(TOTAL), "Questions in total", "about 5\u20138 minutes")
+        + stat(str(TOTAL), "Questions in total", "about 6\u201310 minutes")
         + stat(str(len(PROFILE_QUESTIONS)), "Profile questions", "background and AI usage")
         + stat(str(TOTAL - len(PROFILE_QUESTIONS)), "Likert statements", "Strongly Disagree to Strongly Agree")
-        + stat("5", "Short sections", "plus a final review")
+        + stat("6", "Short sections", "plus a final review")
         + "</div>"
     )
     st.write("")
@@ -245,9 +258,10 @@ def _intro() -> None:
     )
     with st.expander("How is my data used?"):
         st.markdown(
-            "- Your answers are turned into four section averages and five encoded profile values, which are fed to a saved model.\n"
+            "- Your answers about learning habits and your profile are turned into four section averages and five profile values, which the trained model uses for the predicted score. "
+            "The additional questions at the end are not used in that prediction.\n"
             "- They are kept only in this browser session and are not stored on the server, written to a database or included in application logs.\n"
-            "- Downloads (a PDF report or a progress file) are created only when you ask, and contain scores, not your raw answers.\n"
+            "- A PDF report is created only when you ask, and contains scores, not your raw answers.\n"
             "- Refreshing the page or choosing Start Over clears your current answers.\n"
             "- The hosting provider may keep standard technical server logs (for example connection times), which do not contain your answers."
         )

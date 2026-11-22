@@ -29,9 +29,9 @@ def feature_details():
     return [
         {
             "tagline": "A Random Forest regression model turns your answers into an estimated overreliance score from 1 to 5.",
-            "does": "Estimates how your self-reported habits relate to Generative AI overreliance, based on patterns in 151 student questionnaires.",
+            "does": "Estimates how your self-reported habits relate to Generative AI overreliance, based on patterns in 249 student questionnaires.",
             "how": "Your 24 answers (5 profile questions and 19 Likert statements) become 9 model features: four construct averages and five encoded profile answers. The saved model is loaded, never retrained.",
-            "careful": f"In nested cross-validation the average error was about {NESTED_CV['MAE']:.2f} points (R² {NESTED_CV['R2']:.2f}). This is a moderate, internal estimate; an individual result can be off by more, and it is not a diagnosis.",
+            "careful": "This is a moderate, questionnaire-based estimate. An individual result can be off by a fair margin, and it is not a diagnosis. Technical evaluation is on the Research & Experiments page.",
             "see": ["A gauge with your estimated score out of 5", "Your four learning-habit scores with charts", "A plain-language reading of the result and its limits"],
             "extra": "",
         },
@@ -39,7 +39,7 @@ def feature_details():
             "tagline": "SHAP shows which of your answers moved the estimate up or down.",
             "does": "Splits your prediction into one contribution per model feature, measured against the model's baseline (its average output).",
             "how": "SHAP TreeExplainer values from the saved Random Forest add up so that baseline plus contributions equals your score. The app checks this on every explanation.",
-            "careful": "These are influential predictors inside the model, not causes. Across the training data the largest average influence came from independent learning, followed by metacognition and study year.",
+            "careful": "These are influential predictors inside the model, not causes. Across the training data the largest average influence came from independent learning, followed by verification and study year.",
             "see": ["Features that raised and lowered your estimate", "A signed bar chart of all nine contributions", "A technical table and the additivity check for researchers"],
             "extra": "",
         },
@@ -47,7 +47,7 @@ def feature_details():
             "tagline": "A summary of your self-reported learning behaviour across four dimensions.",
             "does": "Shows your independent learning, verification, metacognition and learning-benefit scores side by side.",
             "how": "Each score is the average of your answers in that section on a 1\u20135 scale. An exploratory K-Means grouping (K = 2) shows which group of students your answers resemble most.",
-            "careful": "The grouping is exploratory with moderate separation (silhouette 0.38). It is not a diagnosis or a student personality type.",
+            "careful": "The grouping is exploratory with moderate separation (silhouette 0.36). It is not a diagnosis or a student personality type.",
             "see": ["Four construct scores with a radar chart", "Comparison with the two exploratory K-Means groups", "A note on what the grouping can and cannot say"],
             "extra": "",
         },
@@ -86,5 +86,5 @@ def page_feature():
         else:
             st.button(label, type="primary", on_click=goto, args=(target,), key="feat_try")
     with c2:
-        st.button("Explore model results" if idx == 0 else "Back to Home", on_click=goto,
-                  args=("Model Insights" if idx == 0 else "Home",), key="feat_more")
+        st.button("Back to Home", on_click=goto,
+                  args=("Home",), key="feat_more")

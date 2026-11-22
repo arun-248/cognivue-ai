@@ -30,7 +30,7 @@ def _hub(records, progress, nxt) -> None:
     cards = []
     for r in records:
         p = progress[r["Feature"]]
-        flag = "Support recommended" if r["Priority"] == "Focus area" else "Maintenance"
+        flag = "Suggested practice" if r["Priority"] == "Focus area" else "Maintain current practice"
         nxt_tag = ' <span class="step-tag tag-next">Suggested next</span>' if nxt and nxt["Feature"] == r["Feature"] else ""
         cards.append(
             f'<div class="card"><div style="margin-bottom:8px"><span class="step-tag {TAG[p["status"]]}">{p["status"]}</span>{nxt_tag}</div>'
@@ -49,7 +49,7 @@ def _render_activity(feature: str, record: dict) -> None:
     md_html(
         f"""
         <div class="iv-card">
-        <div class="eyebrow">{"Recommended activity" if needs_support else "Maintenance activity"} \u00b7 about {activity["minutes"]} minutes</div>
+        <div class="eyebrow">{"Recommended activity" if needs_support else "Practice to keep up"} \u00b7 about {activity["minutes"]} minutes</div>
         <h2>{esc(activity["title"])}</h2>
         <div class="why"><b>Why this activity?</b> {esc(activity["why"] if needs_support else activity["why_maintain"])}</div>
         <div class="why" style="margin-top:8px"><b>Instructions.</b> {esc(activity["instructions"])}</div>
@@ -91,19 +91,26 @@ def _render_activity(feature: str, record: dict) -> None:
     p = activity_progress(feature, iv_values())
     st.progress(p["percent"] / 100, text=f"{p['status']} \u00b7 {p['steps_done']} of {p['steps_total']} steps, {p['reflections_done']} of {p['reflections_total']} reflections")
     if p["completed"]:
-        notice("\u2705 Activity completed. This records only that you finished the task. This prototype does not measure whether the activity "
-               "improves learning or reduces overreliance.", "ok")
+        notice("\u2705 Activity completed. This records that you finished the task; it does not change your model score.", "ok")
     else:
         pending = [f"Step {i}" for i, s in enumerate(activity["steps"], 1) if s["id"] in p["pending_steps"]]
         pending += [f"Reflection {i}" for i, r in enumerate(activity["reflections"], 1) if r["id"] in p["pending_reflections"]]
         st.caption("Still to do: " + ", ".join(pending))
-    st.caption("Your text stays in this browser session only and is cleared when you refresh the page or start over.")
+    st.caption("Your progress and text are saved for this session only. They are cleared when you refresh the page or start over.")
     st.button("Reset this activity", on_click=_reset_activity, args=(feature,), key=f"iv_reset_{feature}")
 
 
 def page_intervention():
     result = st.session_state.get("result")
-    section_title("Your Personalised Learning Support", "Rule-based suggestions and four interactive activities, one for each learning dimension.")
+    section_title("Your Personalised Learning Support", "Learning activities based on your reported learning habits, one for each learning dimension.")
+    md_html('<div class="grid g2">'
+            + '<div class="card"><h4>What is this page for?</h4><p>It turns your learning-habit scores into practical activities you can try. '
+              'Each of the four activities targets one dimension, and the one that needs the most practice is suggested first.</p></div>'
+            + '<div class="card"><h4>What each activity encourages</h4><p><b>Independent learning:</b> attempt a problem yourself before asking AI. '
+              '<b>Verification:</b> check AI answers against reliable information. <b>Metacognition:</b> self-test and reflect. '
+              '<b>Learning benefits:</b> use AI to clarify concepts, then apply them yourself.</p></div>'
+            + '</div>')
+    st.write("")
     if not result:
         md_html('<div class="card"><h4>No assessment yet</h4><p>Complete the assessment first. This page will then show your personalised support.</p></div>')
         st.write("")
@@ -123,19 +130,19 @@ def page_intervention():
         <div class="flowrow">
         <div class="node"><div class="k">Your scores</div><div class="t">Four construct averages</div><div class="d">Independent learning, verification, metacognition, learning benefits</div></div>
         <div class="arrow" style="align-self:center">\u2192</div>
-        <div class="node"><div class="k">Rule</div><div class="t">Below {NEUTRAL_MIDPOINT:.1f}?</div><div class="d">Below the neutral midpoint means targeted support (a heuristic)</div></div>
+        <div class="node"><div class="k">Rule</div><div class="t">Below {NEUTRAL_MIDPOINT:.1f}?</div><div class="d">Below the midpoint means suggested practice (a design heuristic)</div></div>
         <div class="arrow" style="align-self:center">\u2192</div>
-        <div class="node"><div class="k">Weakest dimension</div><div class="t">{esc(focus["Construct"])}</div><div class="d">{"Support recommended" if flagged else "Maintain current practice"}</div></div>
+        <div class="node"><div class="k">{"Area to practise" if flagged else "Lowest dimension"}</div><div class="t">{esc(focus["Construct"])}</div><div class="d">{"Suggested practice" if flagged else "Maintain current practice"}</div></div>
         </div>
         """
     )
     st.write("")
     if flagged:
         notice(f"<b>{len(flagged)} of 4</b> learning dimensions are below the neutral midpoint of {NEUTRAL_MIDPOINT:.1f}: "
-               f"{', '.join(esc(r['Construct']) for r in flagged)}. Targeted support is suggested there; the other dimensions receive maintenance suggestions. "
+               f"{', '.join(esc(r['Construct']) for r in flagged)}. Suggested practice is offered there; the other dimensions get activities to keep up your current habits. "
                "You can do any of the four activities.", "info")
     else:
-        notice(f"All four learning dimensions are at or above the neutral midpoint of {NEUTRAL_MIDPOINT:.1f}, so each receives a maintenance suggestion. "
+        notice(f"All four learning dimensions are at or above the neutral midpoint of {NEUTRAL_MIDPOINT:.1f}, so each activity is about keeping up your current habits. "
                "You can still practise any activity.", "ok")
     st.write("")
 
@@ -187,8 +194,7 @@ def page_intervention():
         if not any_text:
             st.caption("No reflections written yet.")
     st.write("")
-    notice(f"The midpoint of {NEUTRAL_MIDPOINT:.1f} is a heuristic design choice, not a validated cut-off. The activities are research-informed prototype suggestions; "
-           "their effectiveness has not been experimentally validated, and finishing them does not show improved learning or reduced overreliance.", "warn")
+    notice(f"The {NEUTRAL_MIDPOINT:.1f} midpoint is a design heuristic, not a validated risk threshold. The activities are prototype suggestions whose effectiveness has not been tested.", "info")
     st.write("")
     c1, c2, _ = st.columns([1.3, 1.4, 2])
     with c1:

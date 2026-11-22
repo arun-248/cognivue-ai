@@ -33,8 +33,9 @@ def _constructs_section(result):
     c1, c2 = st.columns([1.1, 1], gap="large")
     with c1:
         with chart_card("What does my learning-behaviour pattern look like?"):
+            st.caption("Compares your four learning-habit averages. It shows where your habits are stronger or weaker, which is useful for choosing what to practise.")
             charts.show(charts.radar([SHORT[f] for f in CONSTRUCT_ORDER], {"You": [scores[f] for f in CONSTRUCT_ORDER]}, {"You": "#0F8F80"}), "ins_radar")
-            st.caption("Self-reported averages on a 1\u20135 scale; the dashed ring is the neutral midpoint (3.0), a heuristic.")
+            st.caption("Averages on a 1\u20135 scale; the dashed ring is the 3.0 midpoint heuristic.")
     with c2:
         bars = []
         for f, color in zip(CONSTRUCT_ORDER, CONSTRUCT_COLORS):
@@ -48,7 +49,7 @@ def _constructs_section(result):
     with st.expander("What do the four constructs measure?"):
         for f in CONSTRUCT_ORDER:
             st.markdown(f"**{CONSTRUCT_LABELS[f]}** ({len(CONSTRUCT_ITEMS[f])} statements). {DESCRIPTIONS[f]}")
-        st.caption("Each score is the simple average of its statements. Q36 and Q38 are kept separate in the study and are not part of these scores.")
+        st.caption("Each score is the simple average of its statements.")
 
 
 def _cluster_section(result):
@@ -58,7 +59,7 @@ def _cluster_section(result):
     mine = result["cluster"]["cluster_id"] if result else None
 
     section_title("Exploratory behavioural groups (K-Means)",
-                  "Kept separate from your supervised score. The groups come from the saved K-Means model fitted on the 151 study respondents.")
+                  "Kept separate from your supervised score. The groups come from the saved K-Means model fitted on the 249 study respondents.")
     md_html('<div class="grid g4">'
             + stat(str(len(profiles)), "Groups identified", "K = 2 chosen by silhouette")
             + "".join(stat(f"{p['size']} ({p['percent']:.1f}%)", f"Cluster {p['cluster_id']}", "respondents in the study") for p in profiles)
@@ -92,13 +93,15 @@ def _cluster_section(result):
     construct_feats = CLUSTER_FEATURES[:4]
     with c1:
         with chart_card("How do the groups compare on the four constructs?"):
+            st.caption("Compares the average learning-habit scores of the two study groups (and yours), to show what makes the groups different.")
             series = {f"Cluster {p['cluster_id']}": [p["centroid"][f] for f in construct_feats] for p in profiles}
             if result:
                 series = {"You": [float(result["frame"].iloc[0][f]) for f in construct_feats], **series}
             charts.show(charts.vbar_grouped([SHORT[f] for f in construct_feats], series, GROUP_COLORS, "Average score (1\u20135)", yrange=[1, 5.4]), "ins_group_constructs")
-            st.caption("Cluster 0 had higher average scores than Cluster 1 on all four constructs.")
+            st.caption("Cluster 0 scored higher than Cluster 1 on all four constructs.")
     with c2:
         with chart_card("How do the groups compare on AI usage?"):
+            st.caption("Compares how often and how long each group uses Generative AI, to show whether usage differs alongside learning habits.")
             use_feats = CLUSTER_FEATURES[4:]
             series = {f"Cluster {p['cluster_id']}": [p["centroid"][f] for f in use_feats] for p in profiles}
             if result:
@@ -107,19 +110,24 @@ def _cluster_section(result):
             st.caption("Usage is coded 0\u20135; higher means more frequent or longer use.")
 
     with chart_card("Where do the groups sit in the two-dimensional PCA view?"):
+        st.caption("Shows the two groups on a flat map built by PCA, so you can see how far apart they are. Far-apart groups are easier to tell apart.")
         proj = pca_projection(models["kmeans_model"], models["kmeans_scaler"], models["kmeans_pca"], result["frame"] if result else None)
         charts.show(charts.pca_scatter(proj["centroids"], [p["label"] for p in profiles], proj["student"], proj["explained_variance"]), "ins_pca")
-        st.caption(f"The saved PCA keeps {sum(proj['explained_variance']) * 100:.1f}% of the variance in two components. Only the two group centroids "
-                   "and (if you completed the assessment) your own answers are plotted; individual respondents' data is not published.")
+        st.caption(f"The two components keep {sum(proj['explained_variance']) * 100:.1f}% of the variance. The map shows the group centres and, if you completed the assessment, your own answers.")
 
-    notice(
-        f"<b>Interpret with care.</b> K = 2 had the best silhouette score ({silhouette:.2f}), which indicates only moderate separation. The grouping is exploratory: it is "
-        "<b>not</b> a diagnosis, a personality type or a validated student classification, and the overreliance score was excluded when forming the groups.", "warn")
+    notice(f"<b>Interpret with care.</b> K = 2 had the best silhouette score ({silhouette:.2f}), which means only moderate separation. The groups are exploratory and are not a diagnosis.", "info")
 
 
 def page_profile():
     result = st.session_state.get("result")
     section_title("Understand Your Learning Behaviour", "Based only on the answers you entered in this session, plus the exploratory study groups.")
+    md_html('<div class="card"><h4>What is Behavioural Insights?</h4>'
+            '<p>Behavioural Insights uses exploratory clustering to identify groups of students with similar self-reported learning habits. '
+            'It helps us understand patterns across students beyond the individual overreliance prediction.</p>'
+            '<p style="margin-top:8px"><b>Random Forest</b> estimates an overreliance score. <b>K-Means</b> finds groups of similar behavioural patterns. '
+            '<b>PCA</b> squeezes those patterns into two dimensions so the groups can be seen. The two groups are described as a <i>Stronger</i> and a <i>Developing</i> '
+            'learning-strategy profile. These are descriptive labels for exploratory groups, not validated student categories, and the overreliance target was not used to form them.</p></div>')
+    st.write("")
     if not result:
         md_html('<div class="card"><h4>No assessment yet</h4><p>Complete the assessment to see your own profile. The study-level K-Means groups are shown below.</p></div>')
         st.write("")
@@ -134,4 +142,4 @@ def page_profile():
     st.write("")
     c1, c2 = st.columns([1.2, 3])
     with c1:
-        st.button("Explore model insights", on_click=goto, args=("Model Insights",), key="prof_mi")
+        st.button("Explore research & experiments", on_click=goto, args=("Research & Experiments",), key="prof_mi")

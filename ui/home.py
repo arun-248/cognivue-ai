@@ -7,11 +7,10 @@ from pathlib import Path
 
 import streamlit as st
 
-from backend.research_data import DATASET, NESTED_CV
 from ui.art import COLLAB_ART, HERO_ART
 from ui.feature import FEATURE_ACCENTS, FEATURES
 from ui.state import goto, open_feature
-from ui.theme import card, md_html, section_title, stat
+from ui.theme import card, md_html, notice, section_title
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,7 +30,7 @@ def arch_html() -> str:
     return (
         '<div class="arch-branch"><div class="arch-label">Main pipeline \u00b7 supervised prediction</div>'
         '<div class="flow">'
-        '<div class="n">Questionnaire dataset<small>151 consented responses</small></div><i>\u2192</i>'
+        '<div class="n">Questionnaire dataset<small>249 consented responses</small></div><i>\u2192</i>'
         '<div class="n">Data cleaning and preprocessing</div><i>\u2192</i>'
         '<div class="n">Construct score calculation<small>4 learning constructs</small></div><i>\u2192</i>'
         '<div class="n">Feature engineering<small>9 model features</small></div><i>\u2192</i>'
@@ -44,7 +43,7 @@ def arch_html() -> str:
         '<div class="n">K-Means behavioural profiling<small>exploratory, K = 2</small></div>'
         '<div class="n">Deep Learning comparison<small>comparative experiment only</small></div>'
         '<div class="n">Noise robustness<small>Gaussian input perturbation</small></div>'
-        '<div class="n">CTGAN augmentation<small>tested; did not improve the model</small></div></div></div>'
+        '<div class="n">Findings and limitations<small>honest, 249-response results</small></div></div></div>'
     )
 
 
@@ -82,20 +81,48 @@ def page_home():
             )
     st.write("")
     with st.container(key="actions"):
-        a1, a2, a3 = st.columns(3, gap="medium")
+        a1, a2, a3 = st.columns([1.3, 1.3, 1.4], gap="medium")
         with a1:
             with st.container(key="act1"):
-                st.button("Start Your Assessment", icon=":material/assignment:", on_click=goto, args=("Assess",), key="home_start")
+                st.button("Start Assessment", icon=":material/assignment:", on_click=goto, args=("Assess",), key="home_start", type="primary")
         with a2:
             with st.container(key="act2"):
-                st.button("Explore Research", icon=":material/menu_book:", on_click=goto, args=("Research",), key="home_research")
-        with a3:
-            with st.container(key="act3"):
-                st.button("Explore Model Insights", icon=":material/bar_chart:", on_click=goto, args=("Model Insights",), key="home_models")
+                st.button("Explore Research & Experiments", icon=":material/science:", on_click=goto, args=("Research & Experiments",), key="home_research")
 
-    section_title("What Cognivue AI offers",
-                  "A research-based framework to understand, explain and support responsible AI-assisted learning. "
-                  "Insights come from your questionnaire answers, not from analysis of your actual AI prompts or conversations.")
+    section_title("What is Cognivue AI?",
+                  "A learning-reflection tool for students who use Generative AI. You answer 31 short questions about how you use AI and how you study, "
+                  "and Cognivue AI gives you a questionnaire-based estimate, an explanation, and a learning activity.")
+    md_html('<div class="grid g2">'
+            + card("Why it matters", "Generative AI can help you learn faster. But if it does the thinking for you, skills like reasoning, checking answers and "
+                   "working through problems alone can weaken. Cognivue AI helps you notice your own habits so you stay in control of your learning.")
+            + card("Built from student research", "The assessment is based on a questionnaire study of university students\u2019 Generative AI usage and learning behaviour, "
+                   "aligned with the goal of quality education (SDG 4). Your answers are used only to produce your result.")
+            + "</div>")
+
+    section_title("Assess \u2192 Understand \u2192 Improve", "Three simple steps.")
+    steps = [
+        ("Assess", "Answer 31 short questions about your AI use and learning habits. It takes a few minutes."),
+        ("Understand", "See your estimated score, what influenced it, and how you score on four learning dimensions."),
+        ("Improve", "Try a personalised activity that builds independent thinking and answer-checking habits."),
+    ]
+    parts = []
+    for i, (title, text) in enumerate(steps, 1):
+        parts.append(f'<div class="step"><div class="num">{i}</div><h5>{title}</h5><p>{text}</p></div>')
+        if i < len(steps):
+            parts.append('<div class="arrow">\u2192</div>')
+    md_html(f'<div class="steps">{"".join(parts)}</div>')
+
+    section_title("Four dimensions of your learning", "These learning habits, together with your usage profile, feed the model's estimate.")
+    dims = [("Independent learning", "Trying a problem yourself before asking AI."),
+            ("Verification", "Checking AI answers against trusted sources."),
+            ("Metacognition", "Monitoring and reflecting on your own understanding."),
+            ("Learning benefits", "How much AI actually helps you learn and retain.")]
+    md_html('<div class="grid g4">' + "".join(
+        f'<div class="dim"><div class="dtag">Learning habit</div>'
+        f'<div class="dl" style="font-size:1rem;margin-top:8px">{t}</div><div style="color:#425B82;font-size:.85rem;margin-top:6px">{d}</div></div>'
+        for t, d in dims) + "</div>")
+
+    section_title("What Cognivue AI offers", "Insights come from your questionnaire answers, not from analysis of your actual AI prompts or conversations.")
     with st.container(key="features"):
         cols = st.columns(4, gap="medium")
         for i, (col, (title, desc, _page, bg, icon)) in enumerate(zip(cols, FEATURES)):
@@ -105,30 +132,6 @@ def page_home():
                             f'<div class="feat-desc">{desc}</div><div class="feat-more" style="color:{FEATURE_ACCENTS[i]}">Learn more</div>')
                     st.button(f"Learn more about {title}", key=f"feat_btn_{i}", on_click=open_feature, args=(i,))
 
-    section_title("Student experience", "Five steps from self-report to a personalised learning activity.")
-    steps = [
-        ("Student Assessment", "Answer 24 short questions about your AI use and learning habits."),
-        ("Feature Processing", "Answers become four construct scores and five encoded profile features."),
-        ("ML Prediction", "A saved Random Forest estimates your overreliance score."),
-        ("Explainable Analysis", "SHAP shows which answers moved the estimate."),
-        ("Adaptive Intervention", "A rule-based activity encourages independent reasoning."),
-    ]
-    parts = []
-    for i, (title, text) in enumerate(steps, 1):
-        parts.append(f'<div class="step"><div class="num">{i}</div><h5>{title}</h5><p>{text}</p></div>')
-        if i < len(steps):
-            parts.append('<div class="arrow">\u2192</div>')
-    md_html(f'<div class="steps">{"".join(parts)}</div>')
-
-    section_title("Research architecture", "The current pipeline built from the questionnaire study.")
-    md_html(arch_html())
-
-    section_title("Research evaluation", "Reported from the project's own experiments on the questionnaire dataset.")
-    md_html(
-        '<div class="grid g4">'
-        + stat(str(DATASET["consented"]), "Consented respondents", f'of {DATASET["original_rows"]} responses collected')
-        + stat(str(DATASET["features"]), "Model input features", "4 constructs + 5 profile encodings")
-        + stat(f'{NESTED_CV["R2"]:.3f}', "Nested CV R\u00b2", "internal estimate, no external validation", "#109A8A")
-        + stat(f'{NESTED_CV["MAE"]:.3f}', "Nested CV MAE", "on a 1\u20135 target scale", "#3478F6")
-        + "</div>"
-    )
+    st.write("")
+    notice("<b>Research prototype.</b> Cognivue AI is an academic research prototype. Your score is a questionnaire-based estimate for reflection, "
+           "not a diagnosis, a grade or a judgement about you or your academic ability.", "warn")

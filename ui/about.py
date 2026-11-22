@@ -40,15 +40,15 @@ def page_about():
     st.write("")
     md_html('<div class="grid g2">'
             + card("Objective", "Estimate overreliance from questionnaire responses, identify influential behavioural factors, profile behaviour exploratively with K-Means, and provide adaptive, rule-based interventions.")
-            + card("Methodology", "151 consented questionnaire responses \u2192 construct scores and encodings \u2192 tuned Random Forest \u2192 SHAP explanation \u2192 intervention rules, "
-                   "with Deep Learning, noise and CTGAN experiments as comparative research components.")
+            + card("Methodology", "249 consented questionnaire responses \u2192 construct scores and encodings \u2192 tuned Random Forest \u2192 SHAP explanation \u2192 intervention rules, "
+                   "with Deep Learning and noise experiments as comparative research components.")
             + "</div>")
     section_title("Technology stack")
     rows = "".join(f"<tr><td>{esc(a)}</td><td>{esc(b)}</td></tr>" for a, b in STACK)
     md_html(f'<div class="card"><table class="rtable"><tr><th>Component</th><th>Technology</th></tr>{rows}</table></div>')
     section_title("Privacy and data usage")
     md_html('<div class="card"><p>Answers are processed in memory for your browser session only; they are not stored on the server, written to a database or included in logs, and no name, '
-            'email or student ID is requested. Downloads (PDF report, progress file) are created only on request and contain scores rather than raw answers. '
+            'email or student ID is requested. The PDF report is created only on request and contain scores rather than raw answers. '
             'The hosting provider may keep standard technical server logs, which do not contain your answers. Full details are on the Report &amp; Progress page.</p></div>')
     st.write("")
     section_title("Team contributions")

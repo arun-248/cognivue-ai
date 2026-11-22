@@ -39,7 +39,7 @@ def tab_deployed():
             + stat(f'{n["MAE"]:.4f}', "Nested CV MAE", "headline generalisation estimate", BLUE)
             + stat(f'{n["RMSE"]:.4f}', "Nested CV RMSE", "on a 1\u20135 target scale", PURPLE)
             + stat(f'{n["R2"]:.4f}', "Nested CV R\u00b2", "internal estimate", CYAN) + "</div>")
-    st.caption("Nested cross-validation on the 151 respondents. It is an internal estimate and is not external validation.")
+    st.caption("Nested cross-validation on the 249 respondents. It is an internal estimate and is not external validation.")
     st.write("")
     rows = [(m, _pm(a, sa), _pm(b, sb), _pm(c, sc)) for m, a, b, c, sa, sb, sc in R.REPEATED_CV]
     table(["Model", "MAE (mean \u00b1 SD)", "RMSE (mean \u00b1 SD)", "R\u00b2 (mean \u00b1 SD)"], rows, selected=2)
@@ -80,8 +80,8 @@ def tab_deployed():
 def tab_models():
     evidence("Candidate comparison", "Repeated 5-fold \u00d7 5 (25 folds)")
     rows = [(m, _pm(a, sa), _pm(b, sb), _pm(c, sc)) for m, a, sa, b, sb, c, sc in R.MODEL_COMPARISON]
-    table(["Model", "MAE (mean \u00b1 SD)", "RMSE (mean \u00b1 SD)", "R\u00b2 (mean \u00b1 SD)"], rows, selected=0)
-    st.caption("Eight regression models, 151 respondents, 9 features, sorted by MAE. The Random Forest was selected, then tuned.")
+    table(["Model", "MAE (mean \u00b1 SD)", "RMSE (mean \u00b1 SD)", "R\u00b2 (mean \u00b1 SD)"], rows, selected=[r[0] for r in R.MODEL_COMPARISON].index("Random Forest"))
+    st.caption("Eight regression models, 249 respondents, 9 features, sorted by MAE. Gradient Boosting, the Random Forest and SVR are within about 0.001 MAE of each other; the Random Forest was selected for its compatibility with SHAP explanations, then tuned.")
     st.write("")
     names = [r[0] for r in R.MODEL_COMPARISON]
     colors = [BLUE if n == "Random Forest" else GREY for n in names]
@@ -96,12 +96,13 @@ def tab_models():
         with chart_card("R\u00b2 (higher is better)"):
             charts.show(charts.hbar(names, [r[5] for r in R.MODEL_COMPARISON], colors, "R\u00b2", errors=[r[6] for r in R.MODEL_COMPARISON], xrange=[-0.4, 0.6]), "mi_models_r2")
     st.write("")
-    notice("The Random Forest had the lowest MAE and RMSE and the highest R\u00b2 among the eight candidates. This 25-fold comparison used a different cross-validation design from "
+    notice("The three leading models (Gradient Boosting, Random Forest, SVR) are practically tied, so the Random Forest is not claimed to be clearly the best predictor; it was chosen because it handles small tabular data well and works with SHAP explanations. This 25-fold comparison used a different cross-validation design from "
            "the 15-fold validation of the final tuned model, so figures must not be compared across tables or mixed with the nested cross-validation result.", "info")
 
 
 def tab_deep_learning():
-    evidence("Experimental model \u2013 not deployed", "Repeated 5-fold \u00d7 3 (15 folds)")
+    evidence("Final research modelling dataset: 249 responses", "Experimental model \u2013 not deployed", "Repeated 5-fold \u00d7 3 (15 folds)")
+    st.caption("Experiment: Deep Learning vs Random Forest. Both models used identical folds on the 249 responses and the same nine features.")
     rows = [(m, _pm(a, sa), _pm(b, sb), _pm(c, sc)) for m, a, sa, b, sb, c, sc in R.DEEP_LEARNING]
     table(["Model", "MAE (mean \u00b1 SD)", "RMSE (mean \u00b1 SD)", "R\u00b2 (mean \u00b1 SD)"], rows, selected=0)
     st.caption(f"Neural network: {R.DL_ARCHITECTURE}.")
@@ -109,14 +110,15 @@ def tab_deep_learning():
     names = [r[0] for r in R.DEEP_LEARNING]
     c1, c2 = st.columns(2, gap="large")
     with c1:
-        with chart_card("Which model has the lower error? (MAE)"):
-            charts.show(charts.hbar(names, [r[1] for r in R.DEEP_LEARNING], [BLUE, PURPLE], "MAE (lower is better)", errors=[r[2] for r in R.DEEP_LEARNING], xrange=[0, 1.1]), "mi_dl_mae")
+        with chart_card("Which model has the lower error? (MAE, 249 responses)"):
+            charts.show(charts.hbar(names, [r[1] for r in R.DEEP_LEARNING], [BLUE, PURPLE], "MAE (lower is better)", errors=[r[2] for r in R.DEEP_LEARNING], xrange=[0, 0.8]), "mi_dl_mae")
     with c2:
-        with chart_card("Which model explains more variance? (R\u00b2)"):
-            charts.show(charts.hbar(names, [r[5] for r in R.DEEP_LEARNING], [BLUE, PURPLE], "R\u00b2 (higher is better)", errors=[r[6] for r in R.DEEP_LEARNING], xrange=[-1.2, 0.7]), "mi_dl_r2")
+        with chart_card("Which model explains more variance? (R\u00b2, 249 responses)"):
+            charts.show(charts.hbar(names, [r[5] for r in R.DEEP_LEARNING], [BLUE, PURPLE], "R\u00b2 (higher is better)", errors=[r[6] for r in R.DEEP_LEARNING], xrange=[-0.3, 0.5]), "mi_dl_r2")
     st.write("")
-    notice("The Random Forest performed better. The neural network is a <b>comparative experiment</b>, not the deployed prediction model; on 151 respondents it had a negative R\u00b2 "
-           "(worse than predicting the average). This is internal repeated cross-validation, not an independent external test.", "info")
+    notice("The Random Forest again had the lower error and higher R\u00b2, so it remains the deployed model. The neural network is a <b>comparative experiment</b> only. "
+           "This is internal repeated cross-validation on a small dataset, not an independent external test. "
+           "The Random Forest row here comes from this experiment\u2019s own 15 folds, so it can differ from other tables in the last decimal place.", "info")
 
 
 def tab_shap():
@@ -127,8 +129,8 @@ def tab_shap():
     st.write("")
     table(["Rank", "Feature", "Mean |SHAP|", "Share"], [(i, n, f"{v:.6f}", f"{p:.2f}%") for i, (n, v, p) in enumerate(R.SHAP_GLOBAL, 1)])
     st.write("")
-    notice("SHAP TreeExplainer values (shap 0.54.1 in the Colab experiment; the app uses a compatible version) were calculated for the 151 training respondents; the "
-           "baseline + contributions reconstruction matched the model output with a maximum error of 0.0. This global ranking is descriptive, is based on the training data, "
+    notice("SHAP TreeExplainer values (shap 0.54.1 in the Colab experiment; the app uses a compatible version) were calculated for the 249 training respondents; the "
+           "baseline + contributions reconstruction matched the model output (maximum error about 1e-15). This global ranking is descriptive, is based on the training data, "
            "and describes the fitted model rather than causal effects. Individual explanations are on the Why This Result? page.", "info")
 
 
@@ -145,7 +147,7 @@ def tab_kmeans():
             charts.show(charts.line(ks, [sil[k] for k in ks], BLUE, "Silhouette score", "Number of clusters (K)"), "mi_km_sil")
             st.caption(f"K = 2 had the best silhouette score ({sil[2]:.4f}). Scores near 0.5 or above would indicate stronger separation.")
     with c2:
-        with chart_card("How are the 151 respondents split across clusters?"):
+        with chart_card("How are the 249 respondents split across clusters?"):
             charts.show(charts.hbar([f"Cluster {p['cluster_id']}" for p in profiles], [p["size"] for p in profiles], [CYAN, PURPLE], "Respondents", fmt="{:.0f}"), "mi_km_dist")
             st.caption(" \u00b7 ".join(f"Cluster {p['cluster_id']}: {p['size']} ({p['percent']:.2f}%)" for p in profiles))
     st.write("")
@@ -157,7 +159,7 @@ def tab_kmeans():
     st.write("")
     table(["Cluster", "Respondents", "Mean predicted overreliance", "Mean support areas", "Interpretation"],
           [(c, n, f"{p:.4f}", f"{s:.4f}", lab) for c, n, p, s, lab in R.KMEANS_PROFILE_SUMMARY])
-    st.caption("Mean predicted overreliance and the mean number of construct areas below 3.0, per cluster (from the Colab analysis).")
+    st.caption("Mean predicted overreliance and the mean number of construct areas below 3.0, per cluster (re-computed on the 249 respondents).")
     st.write("")
     proj = pca_projection(models["kmeans_model"], models["kmeans_scaler"], models["kmeans_pca"])
     with chart_card("Where are the two group centroids in the saved PCA view?"):
@@ -167,9 +169,8 @@ def tab_kmeans():
            "separation, so these are exploratory groupings, <b>not</b> validated student types or diagnoses.", "warn")
 
 
-def tab_experiments():
-    evidence("Noise: hold-out test", "CTGAN: five-fold, real test respondents")
-    st.markdown("**Noise robustness (Random Forest)**")
+def tab_noise():
+    evidence("Noise: hold-out test", "Re-run on the 249 modelled respondents")
     xs = [r[0] for r in R.NOISE]
     cols = st.columns(3, gap="medium")
     for col, (name, idx, color) in zip(cols, [("MAE (lower is better)", 1, BLUE), ("RMSE (lower is better)", 2, PURPLE), ("R\u00b2 (higher is better)", 3, CYAN)]):
@@ -177,25 +178,25 @@ def tab_experiments():
             with chart_card(name):
                 charts.show(charts.line(xs, [r[idx] for r in R.NOISE], color, name.split(" ")[0], "Noise level", xtick_text=[f"{x}%" for x in xs], height=230), f"mi_noise_{idx}")
     table(["Noise", "MAE", "RMSE", "R\u00b2"], [(f"{n}%", f"{a:.4f}", f"{b:.4f}", f"{c:.4f}") for n, a, b, c in R.NOISE])
-    notice("Gaussian noise was added to the <b>standardised test predictors</b> while training data stayed clean. The Random Forest was relatively stable at low noise "
-           "(0\u20135%) and degraded at higher levels (R\u00b2 0.223 at 30%). Synthetic noise does not represent all real-world errors, and no noise is added to your own answers in this app.", "info")
+    notice("Gaussian noise was added to the <b>standardised test predictors</b> while training data stayed clean. Re-run on the 249 modelled respondents, the Random Forest was relatively stable at low noise "
+           "(0\u20135%) and degraded at higher levels (R\u00b2 0.177 at 30%). Synthetic noise does not represent all real-world errors, and no noise is added to your own answers in this app.", "info")
+
+
+def tab_ctgan():
+    evidence("Final research modelling dataset: 249 responses", "Status: not repeated")
+    md_html('<div class="grid g2">'
+            + card("CTGAN augmentation: not part of the final results", "CTGAN (synthetic-data augmentation) is a planned experiment. It has <b>not</b> been completed or verified on the final 249-response modelling dataset, "
+                   "so no CTGAN result is presented here.")
+            + card("Why it is not shown", "No verified CTGAN run on the final dataset is available, so no values, graphs or performance claims are shown. "
+                   "The deployed Random Forest and every result in this section use real responses only; no synthetic data is used anywhere in the app.")
+            + "</div>")
     st.write("")
-    st.markdown("**CTGAN synthetic-data augmentation**")
-    rows = [(m, f"{a:.4f}", f"{b:.4f}", f"{c:.4f}") for m, (a, b, c) in R.GAN.items()]
-    table(["Model", "MAE", "RMSE", "R\u00b2"], rows, selected=0)
-    names = list(R.GAN.keys())
-    with chart_card("Did synthetic CTGAN data improve the model?"):
-        real, gan = R.GAN[names[0]], R.GAN[names[1]]
-        charts.show(charts.vbar_grouped(["MAE", "RMSE", "R\u00b2"], {names[0]: list(real), names[1]: list(gan)}, {names[0]: BLUE, names[1]: GREY}, "Metric value", fmt="{:.3f}"), "mi_gan")
-    g = R.GAN_FACTS
-    notice(f"CTGAN was trained inside each of five folds with synthetic training data matching the real training size, and test respondents stayed real. {g['synthetic_records']} synthetic records and "
-           f"{g['quality_measurements']} quality measurements were generated. GAN augmentation increased MAE by about {g['mae_increase_percent']}% and did <b>not</b> improve the model, so the "
-           "real-data-only Random Forest remains final. Synthetic data is never used in the real evaluation shown elsewhere.", "warn")
+    notice("The CTGAN experiment on the final 249-response dataset has not been completed. No CTGAN results are claimed, and completing it is listed as future work.", "info")
 
 
 def tab_interventions():
     evidence("Dataset-level rule application", "Heuristic threshold")
-    with chart_card("How many of the 151 respondents were identified for support in each dimension?"):
+    with chart_card("How many of the 249 respondents were identified for support in each dimension?"):
         charts.show(charts.hbar([n for n, _ in R.INTERVENTION_SUMMARY], [c for _, c in R.INTERVENTION_SUMMARY], [AMBER] * 4,
                                 "Respondents with a construct score below 3.0", fmt="{:.0f}"), "mi_iv")
     table(["Construct", "Respondents identified for support"], [(n, c) for n, c in R.INTERVENTION_SUMMARY])
@@ -208,8 +209,7 @@ def tab_predictions():
     df, status = load_oof_predictions()
     if df is None:
         notice("<b>Actual vs predicted and residual plots are not available yet.</b><br>They need genuine out-of-fold predictions from your notebook, and none are bundled with the app, "
-               f"so nothing is shown rather than inventing data ({esc(status)}). Run the cell below in your Colab notebook, then place the downloaded "
-               "<code>evaluation_predictions.csv</code> next to <code>app.py</code>.", "info")
+               f"so nothing is shown rather than inventing data ({esc(status)}). Run the cell below in the research notebook and add the exported predictions file to the app.", "info")
         st.code(NOTEBOOK_SNIPPET, language="python")
         st.caption("The file contains only the actual and predicted scores (no respondent identifiers). Use the same cross-validation settings as your experiments.")
         return
@@ -241,11 +241,11 @@ def tab_guide():
 
 def page_model_insights():
     section_title("Model Insights", "For faculty and researchers: the final deployed model is shown first, then experimental models, each labelled with its type of evidence.")
-    notice("<b>Key caution.</b> Performance is moderate and based on 151 respondents with internal validation only. The estimate supports reflection and research; it is not a diagnosis.", "warn")
+    notice("<b>Key caution.</b> Performance is moderate and based on 249 respondents with internal validation only. The estimate supports reflection and research; it is not a diagnosis.", "warn")
     st.write("")
-    names = ["Deployed model", "Model comparison", "Deep Learning", "SHAP", "K-Means", "Noise & CTGAN", "Interventions", "Predictions & residuals", "Evidence guide"]
+    names = ["Deployed model", "Model comparison", "Deep Learning", "SHAP", "K-Means", "Noise", "Interventions", "Predictions & residuals", "Evidence guide"]
     tabs = st.tabs(names)
-    fns = [tab_deployed, tab_models, tab_deep_learning, tab_shap, tab_kmeans, tab_experiments, tab_interventions, tab_predictions, tab_guide]
+    fns = [tab_deployed, tab_models, tab_deep_learning, tab_shap, tab_kmeans, tab_noise, tab_interventions, tab_predictions, tab_guide]
     for tab, fn in zip(tabs, fns):
         with tab:
             try:

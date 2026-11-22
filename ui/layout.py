@@ -26,8 +26,8 @@ def render_navbar(current: str) -> None:
             st.button("Student Experience", icon=":material/school:", key="top_student",
                       type="primary" if mode == "Student" else "secondary", on_click=goto, args=("Assess",))
         with cols[3]:
-            st.button("Research & Evaluation", icon=":material/bar_chart:", key="top_research",
-                      type="primary" if mode == "Research" else "secondary", on_click=goto, args=("Model Insights",))
+            st.button("Research & Experiments", icon=":material/science:", key="top_research",
+                      type="primary" if mode == "Research" else "secondary", on_click=goto, args=("Research & Experiments",))
         with cols[4]:
             with st.container(key="nav_cta"):
                 st.button("Get Started", key="top_cta", on_click=goto, args=("Assess",))
@@ -39,11 +39,11 @@ def render_left_panel(current: str) -> None:
         assessed = st.session_state.get("result") is not None
         for i, (page, icon, hint) in enumerate(JOURNEY):
             shown = "check_circle" if (page == "Assess" and assessed) else icon
-            st.button(page, icon=f":material/{shown}:", key=f"side_{i}", help=hint,
+            st.button(page, icon=f":material/{shown}:", key=f"side_{i}",
                       type="primary" if current == page else "secondary", on_click=goto, args=(page,))
-        md_html('<div class="panel-divider"></div><div class="panel-label">Research &amp; evaluation</div>')
+        md_html('<div class="panel-divider"></div><div class="panel-label">Research &amp; experiments</div>')
         for i, (page, icon, hint) in enumerate(RESEARCH_NAV):
-            st.button(page, icon=f":material/{icon}:", key=f"rside_{i}", help=hint,
+            st.button(page, icon=f":material/{icon}:", key=f"rside_{i}",
                       type="primary" if current == page else "secondary", on_click=goto, args=(page,))
         md_html(f'<div class="side-art">{SIDE_ART}<p>Think independently. Learn intelligently.</p></div>')
 

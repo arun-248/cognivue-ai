@@ -126,9 +126,8 @@ ART_FOR_PAGE = {
     "Why This Result?": ("xai", "Explainable AI", "SHAP shows which answers moved the model's estimate up or down."),
     "Intervention": ("path", "Adaptive learning support", "Rule-based activities that encourage independent reasoning."),
     "Behavioural Insights": ("radar", "Behavioural insights", "Your self-reported habits across four learning dimensions."),
-    "Progress": ("path", "Progress and report", "Compare attempts, save your progress file and download a PDF report."),
-    "Model Insights": ("lab", "Research laboratory", "Validation, baselines, experiments and explainability."),
-    "Research": ("lab", "Research laboratory", "Dataset, methods, experiments and honest limitations."),
+    "Progress": ("path", "Progress and report", "Compare your attempts and download a PDF report."),
+    "Research & Experiments": ("lab", "Research laboratory", "Dataset, models, experiments and honest limitations."),
     "Testing": ("lab", "Testing and validation", "Automated checks that the pipeline reproduces the Colab results."),
     "About": ("collab", "Human\u2013AI collaboration", "Promoting responsible AI-assisted learning."),
 }

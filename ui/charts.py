@@ -76,29 +76,52 @@ def multi_line(xs, series: dict, colors: dict, ylabel, xlabel, yrange=None, heig
     return _style(fig, height, legend=True)
 
 
-def radar(labels, series: dict, colors: dict, rmin=1, rmax=5, midpoint=3.0, height=360) -> go.Figure:
+def radar(labels, series: dict, colors: dict, rmin=1, rmax=5, midpoint=3.0, height=470, accent_index=None, accent_name="Direct Overreliance", accent_color="#D6336C") -> go.Figure:
+    """Radar chart. Long labels are wrapped, margins leave room for them, and the legend sits below the plot.
+    accent_index marks one axis (e.g. the direct overreliance measure) with a distinct marker."""
     fig = go.Figure()
-    theta = list(labels) + [labels[0]]
+    def _wrap(label: str) -> str:
+        label = str(label).replace(" (", "<br>(").replace(" and ", "<br>and ")
+        parts = []
+        for line in label.split("<br>"):
+            words = line.split(" ")
+            if len(line) > 14 and len(words) > 1:
+                half = len(words) // 2 or 1
+                line = " ".join(words[:half]) + "<br>" + " ".join(words[half:])
+            parts.append(line)
+        return "<br>".join(parts)
+
+    wrapped = [_wrap(l) for l in labels]
+    theta = wrapped + [wrapped[0]]
     if midpoint is not None:
         fig.add_scatterpolar(r=[midpoint] * len(theta), theta=theta, mode="lines", name="Neutral midpoint (3.0)",
-                             line=dict(color=MUTED, dash="dash", width=1), hoverinfo="skip")
+                             line=dict(color=MUTED, dash="dash", width=1.2), hoverinfo="skip")
     for name, values in series.items():
-        fig.add_scatterpolar(r=list(values) + [values[0]], theta=theta, name=name, fill="toself", opacity=0.75,
+        fig.add_scatterpolar(r=list(values) + [values[0]], theta=theta, name=name, fill="toself", opacity=0.55,
                              line=dict(color=colors[name], width=2.5), hovertemplate="%{theta}: %{r:.2f}<extra>" + name + "</extra>")
-    fig.update_layout(polar=dict(radialaxis=dict(range=[rmin, rmax], tickvals=list(range(rmin, rmax + 1)), gridcolor=GRID, linecolor=GRID),
-                                 angularaxis=dict(gridcolor=GRID, linecolor=GRID), bgcolor="white"))
-    return _style(fig, height, legend=True, margin=dict(l=50, r=50, t=30, b=20))
+        if accent_index is not None:
+            fig.add_scatterpolar(r=[values[accent_index]], theta=[wrapped[accent_index]], mode="markers", name=accent_name,
+                                 marker=dict(color=accent_color, size=14, symbol="diamond", line=dict(color="white", width=2)),
+                                 hovertemplate="%{theta}: %{r:.2f}<extra>" + accent_name + "</extra>")
+    fig.update_layout(polar=dict(radialaxis=dict(range=[rmin, rmax], tickvals=list(range(rmin, rmax + 1)), gridcolor=GRID, linecolor=GRID,
+                                                 tickfont=dict(size=11, color=NAVY)),
+                                 angularaxis=dict(gridcolor=GRID, linecolor=GRID, tickfont=dict(size=12, color=NAVY)), bgcolor="white"))
+    _style(fig, height, legend=True, margin=dict(l=100, r=100, t=40, b=120))
+    fig.update_layout(legend=dict(orientation="h", yanchor="top", y=-0.02, xanchor="center", x=0.5, font=dict(size=12, color=NAVY)))
+    return fig
 
 
-def construct_bars(labels, values, colors, height=260) -> go.Figure:
+def construct_bars(labels, values, colors, height=300, midpoint_label="neutral midpoint (3.0)") -> go.Figure:
+    """Horizontal bars (1-5). `colors` may differ per bar so one measure can be visually distinct."""
     fig = go.Figure(go.Bar(x=values, y=labels, orientation="h", marker_color=colors,
                            text=[f"{v:.2f}" for v in values], textposition="outside", cliponaxis=False,
+                           textfont=dict(color=NAVY, size=13),
                            hovertemplate="%{y}: %{x:.2f} / 5<extra></extra>"))
-    fig.add_vline(x=3.0, line_dash="dash", line_color=MUTED, annotation_text="neutral midpoint (3.0)",
-                  annotation_position="top", annotation_font=dict(size=10, color=MUTED))
-    fig.update_xaxes(range=[1, 5.4], title_text="Average of your answers (1 = Strongly Disagree, 5 = Strongly Agree)")
-    fig.update_yaxes(autorange="reversed", showgrid=False)
-    return _style(fig, height, margin=dict(l=8, r=40, t=34, b=8))
+    fig.add_vline(x=3.0, line_dash="dash", line_color=MUTED, annotation_text=midpoint_label,
+                  annotation_position="top", annotation_font=dict(size=11, color=NAVY))
+    fig.update_xaxes(range=[1, 5.5], title_text="Your average (1\u20135)")
+    fig.update_yaxes(autorange="reversed", showgrid=False, automargin=True, tickfont=dict(color=NAVY, size=12))
+    return _style(fig, height, margin=dict(l=8, r=44, t=40, b=8))
 
 
 def waterfall(baseline: float, contributions, prediction: float, height=420) -> go.Figure:
@@ -138,7 +161,7 @@ def stacked_distribution(labels, counts_by_label: dict, totals, height=380) -> g
                     text=[f"{p:.0f}%" if p >= 6 else "" for p in pct], textposition="inside",
                     customdata=counts, hovertemplate="%{y}<br>" + name + ": %{customdata} respondents (%{x:.1f}%)<extra></extra>")
     fig.update_layout(barmode="stack")
-    fig.update_xaxes(range=[0, 100], title_text="Share of the 151 consented respondents (%)")
+    fig.update_xaxes(range=[0, 100], title_text="Share of the 249 modelled respondents (%)")
     fig.update_yaxes(autorange="reversed", showgrid=False)
     return _style(fig, height, legend=True, margin=dict(l=8, r=12, t=40, b=8))
 

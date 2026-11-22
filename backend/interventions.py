@@ -65,6 +65,14 @@ CONSTRUCT_RULES = {
 }
 
 
+STATUS_DISPLAY = {"Support recommended": "Suggested practice"}
+
+
+def display_status(status: str) -> str:
+    """Student-facing wording for a record's Status (stored values are unchanged so saved reports still match)."""
+    return STATUS_DISPLAY.get(status, status)
+
+
 def evaluate_interventions(construct_scores: dict) -> list:
     """One record per construct, in the same shape as the Colab sample report."""
     records = []

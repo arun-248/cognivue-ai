@@ -347,12 +347,17 @@ button[kind="secondary"], button[data-testid="stBaseButton-secondary"] { backgro
 /* ===== readable form widgets (work with a light or a dark Streamlit base theme) ===== */
 [data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] p, [data-testid="stWidgetLabel"] label, [data-testid="stWidgetLabel"] span { color:#142B55 !important; font-weight:600; font-size:.96rem; line-height:1.4; }
 [data-testid="stTooltipIcon"] svg, [data-testid="stTooltipHoverTarget"] svg { color:#5A7096 !important; stroke:#5A7096 !important; }
-div[data-baseweb="select"] > div { background:#FFFFFF !important; border:1px solid #BCD3F8 !important; border-radius:12px !important; color:#142B55 !important; min-height:48px; }
-div[data-baseweb="select"] span, div[data-baseweb="select"] div, div[data-baseweb="select"] input { color:#142B55 !important; -webkit-text-fill-color:#142B55 !important; }
-div[data-baseweb="select"] svg { fill:#425B82 !important; color:#425B82 !important; }
-div[data-baseweb="popover"] ul, div[data-baseweb="popover"] [role="listbox"], div[data-baseweb="menu"] { background:#FFFFFF !important; }
-div[data-baseweb="popover"] li, div[data-baseweb="popover"] [role="option"] { background:#FFFFFF !important; color:#142B55 !important; }
-div[data-baseweb="popover"] li:hover, div[data-baseweb="popover"] [role="option"]:hover, [role="option"][aria-selected="true"] { background:#E5F1FF !important; }
+/* Activity dropdown: lavender theme (closed control + open list) */
+div[data-baseweb="select"] > div { background:#F1EBFF !important; border:1px solid #B9A4F0 !important; border-radius:12px !important; color:#142B55 !important; min-height:48px; }
+div[data-baseweb="select"] > div:hover { background:#E6DCFF !important; }
+div[data-baseweb="select"]:focus-within > div { border-color:#7C4DDB !important; box-shadow:0 0 0 3px rgba(124,77,219,.22) !important; }
+div[data-baseweb="select"] span, div[data-baseweb="select"] div, div[data-baseweb="select"] input { color:#142B55 !important; -webkit-text-fill-color:#142B55 !important; background-color:transparent !important; }
+div[data-baseweb="select"] svg { fill:#7C4DDB !important; color:#7C4DDB !important; }
+div[data-baseweb="popover"], div[data-baseweb="popover"] > div { background:#F1EBFF !important; border:1px solid #B9A4F0 !important; border-radius:12px !important; box-shadow:0 12px 28px rgba(60,40,120,.18) !important; }
+div[data-baseweb="popover"] ul, div[data-baseweb="popover"] [role="listbox"], div[data-baseweb="menu"] { background:#F1EBFF !important; }
+div[data-baseweb="popover"] li, div[data-baseweb="popover"] [role="option"], div[data-baseweb="popover"] li * { background:#F1EBFF !important; color:#142B55 !important; -webkit-text-fill-color:#142B55 !important; }
+div[data-baseweb="popover"] li:hover, div[data-baseweb="popover"] [role="option"]:hover, div[data-baseweb="popover"] li:hover * { background:#DDD0FF !important; }
+div[data-baseweb="popover"] [role="option"][aria-selected="true"], div[data-baseweb="popover"] [role="option"][aria-selected="true"] * { background:#7C4DDB !important; color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important; }
 [data-testid="stNumberInput"] [data-baseweb="input"], [data-testid="stNumberInput"] [data-baseweb="base-input"], [data-testid="stNumberInput"] > div > div { background:#FFFFFF !important; border:1px solid #BCD3F8 !important; border-radius:12px !important; }
 [data-testid="stNumberInput"] input, [data-testid="stTextArea"] textarea, [data-testid="stTextInput"] input, textarea { background:#FFFFFF !important; color:#142B55 !important; -webkit-text-fill-color:#142B55 !important; }
 [data-testid="stNumberInput"] button { background:#E5F1FF !important; color:#142B55 !important; }
@@ -450,6 +455,53 @@ div[data-testid="stRadio"] label p { color:#142B55 !important; font-weight:600; 
   .rtable { font-size:.8rem; }
   .rtable th, .rtable td { padding:8px 8px; }
 }
+/* --- dimension cards (results) --- */
+.dim { background:#FFFFFF; border:1px solid #C8D9F0; border-radius:18px; padding:16px 16px 14px; min-width:0; }
+.dim .dtag { font-size:.66rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#34486F; }
+.dim .dv { font-size:1.9rem; font-weight:800; letter-spacing:-.02em; margin-top:6px; line-height:1.1; }
+.dim .dv small { font-size:.85rem; font-weight:600; color:#425B82; }
+.dim .dl { color:#142B55; font-size:.9rem; font-weight:600; margin-top:4px; overflow-wrap:anywhere; }
+@media (max-width: 1200px) { .g5 { grid-template-columns:repeat(3,1fr); } }
+@media (max-width: 640px) { .g5 { grid-template-columns:repeat(2,1fr); } .dim .dv { font-size:1.5rem; } }
+
+/* --- tabs: always readable (dark navy inactive, strong blue active with underline), all tabs visible --- */
+div[data-baseweb="tab-list"] { flex-wrap:wrap !important; gap:4px 6px !important; border-bottom:1px solid #C8D9F0; overflow:visible !important; }
+button[data-baseweb="tab"] { color:#142B55 !important; background:transparent !important; font-weight:600 !important; padding:8px 12px !important; border-radius:10px 10px 0 0; }
+button[data-baseweb="tab"] p, button[data-baseweb="tab"] div { color:inherit !important; }
+button[data-baseweb="tab"]:hover { color:#0B1F4D !important; background:rgba(52,120,246,.10) !important; }
+button[data-baseweb="tab"][aria-selected="true"] { color:#1D4ED8 !important; background:rgba(52,120,246,.14) !important; font-weight:800 !important; box-shadow:inset 0 -3px 0 #1D4ED8; }
+div[data-baseweb="tab-highlight"] { background-color:#1D4ED8 !important; height:3px !important; }
+div[data-baseweb="tab-border"] { background-color:transparent !important; }
+/* --- dropdowns (Streamlit >= 1.4x react-aria combobox): pale lavender, navy text, purple highlight --- */
+[data-testid="stSelectbox"] .react-aria-ComboBox > div[role="group"] { background:#F1EBFF !important; border:1px solid #B9A4F0 !important; border-radius:12px !important; overflow:hidden; }
+[data-testid="stSelectbox"] .react-aria-ComboBox > div[role="group"]:hover { background:#E6DCFF !important; }
+[data-testid="stSelectbox"] .react-aria-ComboBox > div[role="group"]:focus-within { border-color:#7C4DDB !important; box-shadow:0 0 0 3px rgba(124,77,219,.22) !important; }
+[data-testid="stSelectbox"] input[role="combobox"] { background:transparent !important; color:#142B55 !important; -webkit-text-fill-color:#142B55 !important; caret-color:#7C4DDB; }
+[data-testid="stSelectbox"] input[role="combobox"]::placeholder { color:#5B6F92 !important; }
+[data-testid="stSelectbox"] .react-aria-ComboBox button { background:transparent !important; border-left:1px solid #B9A4F0 !important; color:#7C4DDB !important; }
+[data-testid="stSelectbox"] .react-aria-ComboBox button svg { fill:#7C4DDB !important; color:#7C4DDB !important; }
+[data-testid="stSelectboxVirtualDropdown"] { background:#F1EBFF !important; border:1px solid #B9A4F0 !important; border-radius:12px !important; box-shadow:0 12px 28px rgba(80,50,140,.18) !important; }
+[data-testid="stSelectboxVirtualDropdown"] [role="listbox"], [data-testid="stSelectboxVirtualDropdown"] > div { background:#F1EBFF !important; }
+[data-testid="stSelectboxVirtualDropdown"] [role="option"], [data-testid="stSelectboxVirtualDropdown"] [role="option"] * { background:transparent !important; color:#142B55 !important; -webkit-text-fill-color:#142B55 !important; }
+[data-testid="stSelectboxVirtualDropdown"] [role="option"]:hover, [data-testid="stSelectboxVirtualDropdown"] [role="option"][data-hovered], [data-testid="stSelectboxVirtualDropdown"] [role="option"][data-focused] { background:#DDD0FF !important; }
+[data-testid="stSelectboxVirtualDropdown"] [role="option"][aria-selected="true"], [data-testid="stSelectboxVirtualDropdown"] [role="option"][aria-selected="true"] * { background:#7C4DDB !important; color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important; }
+/* final tab contrast: target role=tab directly (works whatever element Streamlit uses) */
+[data-testid="stTabs"] [role="tab"][aria-selected="false"], [data-testid="stTabs"] [role="tab"][aria-selected="false"] * { color:#142B55 !important; -webkit-text-fill-color:#142B55 !important; }
+[data-testid="stTabs"] [role="tab"][aria-selected="true"], [data-testid="stTabs"] [role="tab"][aria-selected="true"] * { color:#1D4ED8 !important; -webkit-text-fill-color:#1D4ED8 !important; font-weight:800 !important; }
+[data-testid="stTabs"] [role="tab"][aria-selected="true"] { background:rgba(52,120,246,.14) !important; box-shadow:inset 0 -3px 0 #1D4ED8 !important; border-radius:10px 10px 0 0; }
+[data-testid="stTabs"] [role="tab"]:hover, [data-testid="stTabs"] [role="tab"]:hover * { color:#0B1F4D !important; -webkit-text-fill-color:#0B1F4D !important; }
+[data-testid="stTabs"] [role="tab"][aria-selected="true"]:hover, [data-testid="stTabs"] [role="tab"][aria-selected="true"]:hover * { color:#1D4ED8 !important; -webkit-text-fill-color:#1D4ED8 !important; }
+[data-testid="stTabs"] [role="tab"]:hover { background:rgba(52,120,246,.10) !important; }
+[data-testid="stTabs"] [role="tab"]:focus-visible { outline:3px solid #1D4ED8 !important; outline-offset:2px !important; }
+/* Streamlit renders tabs as role="tablist": wrap so all 11 research tabs stay visible (no hidden scroll arrows), on desktop and mobile */
+[data-testid="stTabs"] [role="tablist"] { flex-wrap:wrap !important; overflow:visible !important; gap:4px 6px !important; height:auto !important; border-bottom:1px solid #C8D9F0; }
+[data-testid="stTabs"] [data-baseweb="tab-highlight"], [data-testid="stTabs"] [data-baseweb="tab-border"] { display:none !important; }
+button[data-baseweb="tab"]:focus-visible { outline:3px solid #1D4ED8 !important; outline-offset:2px !important; }
+button[data-baseweb="tab"][aria-selected="false"], button[data-baseweb="tab"][aria-selected="false"] * { color:#142B55 !important; -webkit-text-fill-color:#142B55 !important; }
+button[data-baseweb="tab"][aria-selected="true"], button[data-baseweb="tab"][aria-selected="true"] * { color:#1D4ED8 !important; -webkit-text-fill-color:#1D4ED8 !important; }
+/* nav tooltips removed (no help= on side buttons); any remaining Streamlit tooltip must never intercept the pointer */
+[data-testid="stTooltipContent"] { pointer-events:none !important; }
+[data-testid="stTabs"] [data-testid="stTabsScrollButton"], [data-testid="stTabs"] button[aria-label*="croll"] { display:none !important; }
 </style>
 """
 

@@ -22,8 +22,7 @@ JOURNEY = [
     ("Progress", "timeline", "Report, progress over time and privacy"),
 ]
 RESEARCH_NAV = [
-    ("Model Insights", "bar_chart", "Validation, baselines and experiments"),
-    ("Research", "science", "Dataset, methods and limitations"),
+    ("Research & Experiments", "science", "Dataset, models, experiments and limitations"),
     ("Testing", "fact_check", "Automated test results"),
     ("About", "info", "Project, team and disclaimer"),
 ]

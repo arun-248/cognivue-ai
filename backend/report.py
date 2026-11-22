@@ -23,10 +23,10 @@ from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Space
 
 from backend.history import LABELS as CONSTRUCT_SHORT
 from backend.history import compare_attempts
-from backend.interventions import NEUTRAL_MIDPOINT
+from backend.interventions import NEUTRAL_MIDPOINT, display_status
 
 NAVY, BLUE, MUTED, LIGHT = colors.HexColor("#142B55"), colors.HexColor("#3478F6"), colors.HexColor("#425B82"), colors.HexColor("#E5F1FF")
-NESTED_CV_MAE = 0.4963
+NESTED_CV_MAE = 0.5286
 
 DISCLAIMER = (
     "This research prototype estimates potential Generative AI overreliance using self-reported questionnaire "
@@ -123,20 +123,20 @@ def build_report_pdf(result: dict, explanation: dict | None = None, cluster_prof
     story.append(_p(f"{sub}  |  Generated {stamp}" + (f"  |  {label.strip()[:60]}" if label.strip() else ""), st["sub"]))
 
     # 1. Score
-    story.append(_p("1. Estimated overreliance score", st["h"]))
+    story.append(_p("1. Predicted overreliance score", st["h"]))
     story.append(_p(f"{pred['score']:.2f} out of 5", ParagraphStyle("big", parent=st["title"], fontSize=26, textColor=BLUE, spaceAfter=0)))
     story.append(_score_bar(pred["score"]))
-    story.append(_p("This is a continuous estimate from a Random Forest trained on 151 student questionnaires, on a scale from 1 (weaker "
+    story.append(_p("This is a continuous estimate from a Random Forest trained on 249 student questionnaires, on a scale from 1 (weaker "
                     "self-reported reliance) to 5 (stronger). It is not a probability, a category or a diagnosis. In nested cross-validation the average error was about "
                     f"{NESTED_CV_MAE:.2f} points, so an individual estimate can be off by more.", st["body"]))
 
     # 2. Construct scores
-    story.append(_p("2. Learning-habit scores (calculated directly from your answers)", st["h"]))
+    story.append(_p("2. Your four learning dimensions (calculated directly from your answers)", st["h"]))
     rows = [[_p("Dimension", st["cellb"]), _p("Score (1-5)", st["cellb"]), _p(f"Compared with the neutral midpoint ({NEUTRAL_MIDPOINT:.1f})", st["cellb"])]]
     for rec in result["interventions"]:
         s = rec["Observed_Score"]
         rows.append([_p(rec["Construct"], st["cell"]), _p(f"{s:.2f}", st["cell"]),
-                     _p("Below the midpoint - support suggested" if s < NEUTRAL_MIDPOINT else "At or above the midpoint", st["cell"])])
+                     _p("Below the midpoint - suggested practice" if s < NEUTRAL_MIDPOINT else "At or above the midpoint", st["cell"])])
     story.append(_table(rows, [W * 0.4, W * 0.18, W * 0.42]))
     story.append(Spacer(1, 4))
     story.append(_p(f"AI usage frequency: {labels['usage_frequency']}.  AI usage on a study day: {labels['usage_duration']}.  "
@@ -147,10 +147,10 @@ def build_report_pdf(result: dict, explanation: dict | None = None, cluster_prof
     flagged = [r for r in result["interventions"] if r["Priority"] == "Focus area"]
     focus = min(flagged or result["interventions"], key=lambda r: r["Observed_Score"])
     story.append(_p(f"Most important area to look at: {focus['Construct']} (score {focus['Observed_Score']:.2f}). "
-                    + ("Targeted support is suggested." if flagged else "All dimensions are at or above the midpoint, so maintenance suggestions apply."), st["body"]))
+                    + ("Suggested practice is offered." if flagged else "All dimensions are at or above the midpoint, so the suggestions are about keeping up your current habits."), st["body"]))
     story.append(Spacer(1, 3))
     for rec in sorted(result["interventions"], key=lambda r: (r["Priority"] != "Focus area", r["Observed_Score"])):
-        story.append(KeepTogether([_p(f"{rec['Construct']} - {rec['Status']}", st["cellb"]), _p(rec["Intervention"], st["body"]), Spacer(1, 4)]))
+        story.append(KeepTogether([_p(f"{rec['Construct']} - {display_status(rec['Status'])}", st["cellb"]), _p(rec["Intervention"], st["body"]), Spacer(1, 4)]))
 
     # 4. SHAP
     if explanation:
@@ -167,7 +167,7 @@ def build_report_pdf(result: dict, explanation: dict | None = None, cluster_prof
     if cluster_profile:
         story.append(_p("5. Exploratory K-Means group", st["h"]))
         story.append(_p(f"Your answers are closest to Cluster {cluster_profile['cluster_id']} ({cluster_profile['profile_label']}). This grouping is exploratory "
-                        "(silhouette 0.38, moderate separation). It is not a diagnosis or a validated student type.", st["body"]))
+                        "(silhouette 0.36, moderate separation). It is not a diagnosis or a validated student type.", st["body"]))
 
     # 6. Interventions
     if intervention:

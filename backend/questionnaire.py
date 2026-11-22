@@ -168,6 +168,29 @@ LIKERT_ITEM_IDS = [item["id"] for sec in LIKERT_SECTIONS for item in sec["items"
 CONSTRUCT_ITEMS = {sec["feature"]: [i["id"] for i in sec["items"]] for sec in LIKERT_SECTIONS}
 CONSTRUCT_LABELS = {sec["feature"]: sec["construct"] for sec in LIKERT_SECTIONS}
 
+# ----------------------------------------------------------------------
+# Section F - Direct Overreliance Assessment (seven statements)
+#
+# These are the same seven statements whose mean defines the research TARGET.
+# In the app they are collected under their own keys (D1-D7), shown separately,
+# shown as an additional questionnaire section (no score is displayed), and are
+# NEVER passed to preprocessing, the Random Forest, SHAP or K-Means.
+# ----------------------------------------------------------------------
+DIRECT_SECTION = {
+    "section": "F",
+    "title": "Additional Questions",
+    "items": [
+        {"id": "D1", "text": "I depend on generative AI to begin academic tasks that I could attempt independently."},
+        {"id": "D2", "text": "I find it difficult to complete certain academic tasks when generative AI is unavailable."},
+        {"id": "D3", "text": "I often accept AI-generated answers without developing my own solution first."},
+        {"id": "D4", "text": "I rely on generative AI even when I have enough knowledge to solve a problem myself."},
+        {"id": "D5", "text": "I feel less confident in my ability to solve academic problems independently when I cannot use generative AI."},
+        {"id": "D6", "text": "I sometimes submit or use AI-generated solutions without fully understanding how they work."},
+        {"id": "D7", "text": "After receiving a suggestion from Generative AI, I find it difficult to decide on an answer independently."},
+    ],
+}
+DIRECT_ITEM_IDS = [item["id"] for item in DIRECT_SECTION["items"]]
+
 # Target items: must never be collected as predictors (leakage guard).
 TARGET_ITEM_IDS = ["Q12", "Q13", "Q14", "Q15", "Q16", "Q17", "Q18"]
 
@@ -186,6 +209,12 @@ FEATURE_ORDER = [
 
 REQUIRED_KEYS = PROFILE_KEYS + LIKERT_ITEM_IDS  # 5 + 19 = 24
 
+# Everything a student answers in the app: 24 predictor answers + 7 direct answers.
+ASSESSMENT_KEYS = REQUIRED_KEYS + DIRECT_ITEM_IDS  # 31
+
+assert len(DIRECT_ITEM_IDS) == 7
+assert len(ASSESSMENT_KEYS) == 31
+assert not set(DIRECT_ITEM_IDS) & set(REQUIRED_KEYS)
 assert len(PROFILE_KEYS) == 5
 assert len(LIKERT_ITEM_IDS) == 19
 assert len(REQUIRED_KEYS) == 24

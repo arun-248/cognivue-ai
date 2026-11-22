@@ -1,6 +1,405 @@
 {
   "tests": [
     {
+      "suite": "Features",
+      "id": "F01",
+      "category": "Intervention activities",
+      "test": "Four separate activities exist, each with instructions, steps, tasks and reflection questions",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F02",
+      "category": "Intervention activities",
+      "test": "Every activity moves Not started -> In progress -> Completed",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F03",
+      "category": "Intervention activities",
+      "test": "Blank text, an unticked check and an invalid rating do not count as done",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F04",
+      "category": "Intervention activities",
+      "test": "The next recommended activity follows the weakest construct among those not yet completed",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F05",
+      "category": "Intervention activities",
+      "test": "The intervention summary counts completed activities and includes written reflections",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F06",
+      "category": "PDF report",
+      "test": "A valid multi-section PDF is generated",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F07",
+      "category": "PDF report",
+      "test": "The PDF contains the score, disclaimer, label, reflections, K-Means note and attempt comparison",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F08",
+      "category": "PDF report",
+      "test": "The report works with minimal inputs and unsupported characters are made PDF-safe",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F09",
+      "category": "Attempt history",
+      "test": "A progress file round-trips and holds derived scores only (no raw answers or identifiers)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F10",
+      "category": "Attempt history",
+      "test": "Invalid, foreign, oversized or out-of-range progress files are rejected with clear messages",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F11",
+      "category": "Attempt history",
+      "test": "Histories merge without duplicates and attempt differences are computed correctly",
+      "status": "Pass"
+    },
+    {
+      "suite": "Features",
+      "id": "F12",
+      "category": "Evaluation file loader",
+      "test": "Missing, malformed, out-of-range or too-short evaluation files are refused; valid files yield correct metrics",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B01",
+      "category": "Model loading",
+      "test": "Random Forest loaded with the documented parameters (149 trees, depth 5)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B02",
+      "category": "Model loading",
+      "test": "Installed scikit-learn matches the version used for training; no load warnings",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B03",
+      "category": "Feature order",
+      "test": "Feature order identical in code, Feature_Order.json, model metadata and the Random Forest",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B04",
+      "category": "Encodings and construct items match the Colab metadata",
+      "test": "All five categorical encodings are identical to the Colab mappings",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B05",
+      "category": "Encodings and construct items match the Colab metadata",
+      "test": "Likert encoding is 1-5 (Strongly Disagree ... Strongly Agree)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B06",
+      "category": "Encodings and construct items match the Colab metadata",
+      "test": "Construct item groups match Cognivue_Preprocessing_Metadata.json",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B07",
+      "category": "Encodings and construct items match the Colab metadata",
+      "test": "24 predictors collected (5 categorical + 19 Likert); Q12-Q18, Q36, Q38 excluded",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B08",
+      "category": "Colab respondent 118 reproduced end to end",
+      "test": "Nine model features equal the expected values, in the trained order",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B09",
+      "category": "Colab respondent 118 reproduced end to end",
+      "test": "Prediction 2.8917 equals the saved reference report 2.8917",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B10",
+      "category": "Colab respondent 118 reproduced end to end",
+      "test": "SHAP baseline and top-3 contributions equal the saved reference sample report",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B11",
+      "category": "Colab respondent 118 reproduced end to end",
+      "test": "SHAP additivity verified (error 8.88e-16)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B12",
+      "category": "Colab respondent 118 reproduced end to end",
+      "test": "K-Means cluster 0 and profile label equal the saved reference sample report",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B13",
+      "category": "Colab respondent 118 reproduced end to end",
+      "test": "Rule-based interventions are identical to the Colab sample report",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B14",
+      "category": "Colab respondent 118 reproduced end to end",
+      "test": "Construct scores below the 3.0 midpoint trigger support recommendations",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B15",
+      "category": "Input validation",
+      "test": "Each of the 24 answers is individually required (no default values)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B16",
+      "category": "Input validation",
+      "test": "None, empty text and NaN are rejected",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B17",
+      "category": "Input validation",
+      "test": "Invalid Likert answers are rejected (unknown label, 0, 6, 3.5, boolean, list)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B18",
+      "category": "Input validation",
+      "test": "Integer 1-5 and case-insensitive labels are accepted",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B19",
+      "category": "Input validation",
+      "test": "Unavailable categorical options are rejected",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B20",
+      "category": "Input validation",
+      "test": "Target items Q12-Q18 are rejected as predictors (leakage guard)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B21",
+      "category": "Input validation",
+      "test": "Empty submission raises ValidationError",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B22",
+      "category": "Randomised and extreme inputs",
+      "test": "2,000 random questionnaires: finite scores in 1-5 (range 1.842-3.461)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B23",
+      "category": "Randomised and extreme inputs",
+      "test": "SHAP additivity verified on 100 random students",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B24",
+      "category": "Randomised and extreme inputs",
+      "test": "Extreme all-minimum and all-maximum questionnaires give valid scores",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B25",
+      "category": "Randomised and extreme inputs",
+      "test": "Predictions are deterministic (to within floating-point rounding, about 1e-16)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B26",
+      "category": "Wording check",
+      "test": "19 Likert statements present; two Q22 items kept separate",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B27",
+      "category": "K-Means groups derived from the saved model",
+      "test": "Cluster sizes from the saved model are 195 and 54 (78.31% / 21.69%)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B28",
+      "category": "K-Means groups derived from the saved model",
+      "test": "Centroids (inverse-transformed) equal the saved cluster means",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B29",
+      "category": "K-Means groups derived from the saved model",
+      "test": "Profile labels are derived from the fitted centroids (higher construct centroids = stronger group)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B30",
+      "category": "K-Means groups derived from the saved model",
+      "test": "Silhouette 0.3618, inertia and PCA explained variance 0.7921 match the saved objects",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B31",
+      "category": "K-Means groups derived from the saved model",
+      "test": "A student's profile label always equals the label of the assigned cluster's centroid",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B32",
+      "category": "Model loading safety",
+      "test": "A missing models folder raises a clear FileNotFoundError",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B33",
+      "category": "Model loading safety",
+      "test": "A corrupted model file raises ModelIntegrityError",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B34",
+      "category": "Model loading safety",
+      "test": "Model/metadata hyperparameter mismatch is detected",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B35",
+      "category": "Model loading safety",
+      "test": "A feature row containing NaN is rejected before prediction",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B36",
+      "category": "Research data and scale consistency",
+      "test": "Q12-Q18 response distributions each sum to the 249 modelled respondents",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B37",
+      "category": "Research data and scale consistency",
+      "test": "No old 1-7 scale or Low/Moderate/High risk wording remains in the UI source",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B38",
+      "category": "Research data and scale consistency",
+      "test": "The gauge illustration shows a 1-5 continuous estimate",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B39",
+      "category": "The seven additional questions are separate from the model",
+      "test": "The seven direct overreliance statements use the exact supplied wording and section title",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B40",
+      "category": "The seven additional questions are separate from the model",
+      "test": "The assessment has exactly 31 questions (24 predictor + 7 direct); the direct keys are separate from the predictor and Q12-Q18 keys",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B41",
+      "category": "The seven additional questions are separate from the model",
+      "test": "The Random Forest still receives exactly nine features, in the trained order",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B42",
+      "category": "The seven additional questions are separate from the model",
+      "test": "Identical first 24 answers with different final seven answers give identical features, Random Forest prediction, SHAP contributions and K-Means cluster",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B43",
+      "category": "The seven additional questions are separate from the model",
+      "test": "The Direct Overreliance Score changes with the seven answers (1.00 for all Strongly Disagree, 5.00 for all Strongly Agree)",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B44",
+      "category": "The seven additional questions are separate from the model",
+      "test": "The direct score is the plain average of the seven submitted answers",
+      "status": "Pass"
+    },
+    {
+      "suite": "Backend pipeline",
+      "id": "B45",
+      "category": "The seven additional questions are separate from the model",
+      "test": "Overreliance Reflection suggestions appear only for statements answered Agree or Strongly Agree (none vs all seven)",
+      "status": "Pass"
+    },
+    {
       "suite": "App flow",
       "id": "A01",
       "category": "Assessment",
@@ -11,188 +410,321 @@
       "suite": "App flow",
       "id": "A02",
       "category": "Assessment",
-      "test": "Assessment opens with 5 profile questions and NO default answers",
+      "test": "The assessment explains that it is not an examination and describes data use",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A03",
       "category": "Assessment",
-      "test": "Next is blocked while profile questions are unanswered (clear error shown)",
+      "test": "Assessment opens with 5 profile questions, NO default answers and a progress indicator",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A04",
       "category": "Assessment",
-      "test": "Profile completed -> Independent learning section (5 Likert questions)",
+      "test": "Next is blocked while profile questions are unanswered (clear error shown)",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A05",
       "category": "Assessment",
-      "test": "Back keeps previously entered profile answers",
+      "test": "Profile completed -> Independent learning section; progress shows answered, remaining and section counts",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A06",
       "category": "Assessment",
-      "test": "Returning to a section restores its answers (no Streamlit warnings)",
+      "test": "Back keeps previously entered profile answers",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A07",
       "category": "Assessment",
-      "test": "All four Likert sections completed -> Review page",
+      "test": "Returning to a section restores its answers (no Streamlit warnings)",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A08",
       "category": "Assessment",
-      "test": "Submit enabled when all 24 answers are present",
+      "test": "All five question sections plus the Additional Questions section (exact wording, no Q12-Q18 labels) completed -> Review page",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A09",
       "category": "Assessment",
-      "test": "Edit on the review page jumps to that section",
+      "test": "Submit is disabled until the confirmation box is ticked",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A10",
-      "category": "Prediction",
-      "test": "Submission produces the real Random Forest score 2.8551 (matches Colab respondent 118)",
+      "category": "Assessment",
+      "test": "Ticking the confirmation enables Submit",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A11",
-      "category": "Prediction",
-      "test": "Construct scores 4.0 / 4.0 / 3.6 / 4.0 calculated from the answers",
+      "category": "Assessment",
+      "test": "Edit on the review page jumps to that section",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A12",
-      "category": "Prediction",
-      "test": "Results page shows the continuous score out of 5 with no invented risk labels",
+      "category": "Assessment",
+      "test": "Revisiting the review page requires confirming again",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A13",
       "category": "Prediction",
-      "test": "K-Means cluster 0 / Stronger profile reproduced for respondent 118",
+      "test": "Submission produces the real Random Forest score 2.8917 (matches the saved reference sample report)",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A14",
-      "category": "Explainability",
-      "test": "SHAP page renders and the additivity check passes",
+      "category": "Prediction",
+      "test": "No direct score is calculated or stored: the seven additional answers are collected only",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A15",
-      "category": "Interventions",
-      "test": "Interventions page opens on the suggested dimension (lowest construct score)",
+      "category": "Prediction",
+      "test": "Construct scores 4.0 / 4.0 / 3.6 / 4.0 calculated from the answers",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A16",
-      "category": "Interventions",
-      "test": "Interactive activity tracks progress and shows completion (no effectiveness claims)",
+      "category": "Prediction",
+      "test": "Results show exactly one predicted score and four dimension cards, with no direct score, fifth dimension or reflection card",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A17",
-      "category": "Interventions",
-      "test": "Activity text is preserved when navigating away and back",
+      "category": "Prediction",
+      "test": "Results show the plain-language RF explanation, with no 2.75 baseline, Q12-Q18 wording or technical metrics, plus summary, recommendations and charts",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A18",
-      "category": "Behavioural insights",
-      "test": "Behavioural Insights shows the exploratory K-Means group with its caveats",
+      "category": "Prediction",
+      "test": "K-Means cluster 0 matches the saved reference report and the attempt is recorded",
       "status": "Pass"
     },
     {
       "suite": "App flow",
       "id": "A19",
+      "category": "Prediction",
+      "test": "In the running app, changing only the seven additional answers leaves the RF score, SHAP and cluster identical",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A20",
+      "category": "Explainability",
+      "test": "SHAP page shows the verified individual explanation, a waterfall, and clearly separate global importance",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A21",
+      "category": "Interventions",
+      "test": "The activity hub opens on the weakest construct (Metacognition) and shows status for all four activities",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A22",
+      "category": "Interventions",
+      "test": "Completing steps and reflections marks the activity Completed and updates the summary and next recommendation",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A23",
+      "category": "Interventions",
+      "test": "Activity progress is preserved when navigating away and back",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A24",
+      "category": "Behavioural insights",
+      "test": "Behavioural Insights shows group sizes, silhouette, averages, comparison charts and PCA with caveats",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A25",
+      "category": "Report and progress",
+      "test": "The PDF report is generated from the Progress page",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A26",
+      "category": "Report and progress",
+      "test": "The Progress page lists attempts and explains privacy and data usage",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A27",
+      "category": "Repeat assessment",
+      "test": "Start Over clears answers but keeps earlier attempts for comparison",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A28",
+      "category": "Repeat assessment",
+      "test": "A second attempt is compared with the first and the change is described as self-reported",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A29",
+      "category": "Repeat assessment",
+      "test": "The Progress page charts both attempts",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A30",
       "category": "Pages",
       "test": "All 11 pages render without errors (with a result)",
       "status": "Pass"
     },
     {
       "suite": "App flow",
-      "id": "A20",
-      "category": "Start over",
-      "test": "Start Over clears answers, result and widget state",
+      "id": "A31",
+      "category": "Pages",
+      "test": "Research & Experiments has exactly 11 sections in the requested order, with version labels, IEEE DataPort details and the four learning dimensions",
       "status": "Pass"
     },
     {
       "suite": "App flow",
-      "id": "A21",
-      "category": "Start over",
-      "test": "Result pages show a friendly guard when no assessment has been submitted",
+      "id": "A32",
+      "category": "Pages",
+      "test": "A 'View Dataset on IEEE DataPort' link button points to ieee-dataport.org",
       "status": "Pass"
     },
     {
       "suite": "App flow",
-      "id": "A22",
-      "category": "Start over",
+      "id": "A33",
+      "category": "Pages",
+      "test": "The supplied architecture diagram file assets/research_architecture.png is present and the Architecture section renders without errors (display checked in the browser)",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A34",
+      "category": "Pages",
+      "test": "Graphs & Visual Results shows all nine numbered graphs with titles, dataset (249), experiment and units; no 151-response or CTGAN values",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A35",
+      "category": "Pages",
+      "test": "Home has no research architecture/evaluation cards or technical metrics and keeps a prominent Start Assessment button",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A36",
+      "category": "Start over and refresh",
+      "test": "Result pages show a friendly guard when there is no submitted assessment",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A37",
+      "category": "Start over and refresh",
       "test": "All 11 pages render without errors (without a result)",
       "status": "Pass"
     },
     {
       "suite": "App flow",
-      "id": "A23",
+      "id": "A38",
+      "category": "Start over and refresh",
+      "test": "A page refresh (new session) starts clean: no answers, result or attempts are retained",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A39",
       "category": "Validation",
       "test": "Submit is disabled and an error names the unanswered question",
       "status": "Pass"
     },
     {
       "suite": "App flow",
-      "id": "A24",
+      "id": "A40",
       "category": "Validation",
       "test": "'Go to first unanswered question' jumps to the right section",
       "status": "Pass"
     },
     {
       "suite": "App flow",
-      "id": "A25",
+      "id": "A41",
       "category": "Interventions",
       "test": "Low construct scores flag all four dimensions for targeted support",
       "status": "Pass"
     },
     {
       "suite": "App flow",
-      "id": "A26",
+      "id": "A42",
       "category": "Interventions",
       "test": "A minimum-style questionnaire still yields a valid score in 1-5",
       "status": "Pass"
     },
     {
       "suite": "App flow",
-      "id": "A27",
+      "id": "A43",
       "category": "Interventions",
       "test": "High construct scores give maintenance suggestions and a valid score",
       "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A44",
+      "category": "Model loading failure",
+      "test": "If the models cannot be loaded the app shows a clear message instead of crashing",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A45",
+      "category": "Model loading failure",
+      "test": "Submitting without models shows a friendly error and no result",
+      "status": "Pass"
+    },
+    {
+      "suite": "App flow",
+      "id": "A46",
+      "category": "Model loading failure",
+      "test": "Pages that need the models degrade gracefully (no crash, friendly notice)",
+      "status": "Pass"
     }
   ],
-  "generated": "2026-11-02 18:34",
+  "generated": "2026-11-22 13:02",
   "environment": {
-    "python": "3.11.9",
+    "python": "3.13.18",
     "streamlit": "1.66.1",
     "scikit-learn": "1.6.1",
     "shap": "0.51.0"
