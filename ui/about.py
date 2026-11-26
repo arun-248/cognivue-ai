@@ -9,9 +9,13 @@ from ui.theme import DISCLAIMER, card, esc, md_html, notice, section_title
 TITLE = "AI-Based Framework for Detecting Generative AI Overreliance and Providing Adaptive Interventions"
 
 TEAM = [
-    {"role": "Member 1", "name": "", "id": "", "focus": ""},
-    {"role": "Member 2", "name": "", "id": "", "focus": ""},
-    {"role": "Member 3", "name": "C Arun", "id": "CB.SC.P2AIE26008", "focus": ""},
+    {"role": "Research & Paper Writing", "name": "DhanushKanna G", "id": "CB.SC.P2AIE26011",
+     "focus": "AI Dependency, Cognitive Behaviour and Overreliance Analysis; Abstract; Introduction; helped in Methodology"},
+    {"role": "Research & Analysis", "name": "Vipin Chandran A", "id": "CB.SC.P2AIE26041",
+     "focus": "AI Trust, Learning Behaviour and Psychological Factors; SDG Goals"},
+    {"role": "Project Lead & Developer", "name": "C Arun", "id": "CB.SC.P2AIE26008",
+     "focus": "Machine Learning Model, SHAP, K-Means and Deep Learning Experiments; Python Backend; Streamlit Frontend; "
+              "Backend\u2013Frontend Integration; GitHub and Render Deployment; Dataset Description; Methodology"},
 ]
 
 STACK = [
@@ -53,9 +57,8 @@ def page_about():
     st.write("")
     section_title("Team contributions")
     rows = "".join(
-        f"<tr><td>{esc(m['name'] or 'Name to be added')}</td><td>{esc(m['id'] or 'ID to be added')}</td><td>{esc(m['role'])}</td>"
-        f"<td>{esc(m['focus'] or 'Contribution to be added')}</td></tr>" for m in TEAM)
+        f"<tr><td>{esc(m['name'])}</td><td>{esc(m['id'])}</td><td>{esc(m['role'])}</td>"
+        f"<td>{esc(m['focus'])}</td></tr>" for m in TEAM)
     md_html(f'<div class="card" style="overflow-x:auto"><table class="rtable"><tr><th>Name</th><th>ID</th><th>Role</th><th>Contribution</th></tr>{rows}</table></div>')
-    st.caption("Names, IDs and contributions are shown only where supplied by the team; the rest are left as placeholders.")
     st.write("")
     notice(f"<b>Research prototype disclaimer.</b> {esc(DISCLAIMER)}", "warn")
